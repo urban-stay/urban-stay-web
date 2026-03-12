@@ -1,11 +1,19 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface User {
+export interface User {
   id: number;
+  username: string;
   email: string;
   name: string;
+  code: string;
+  description?: string;
   active: boolean;
+  isDefault: boolean;
+  role: 'SUPER_ADMIN' | 'ADMIN' | 'USER';
+  createdAt: string;
+  updatedAt: string;
 }
+
 
 interface UserContextType {
   user: User | null;

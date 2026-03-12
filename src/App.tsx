@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import DashboardLayout from './components/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 import LoadingSpinner from './components/LoadingSpinner';
+import { useUser } from './context/UserContext';
 
 // Lazy load pages for better performance
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -13,8 +14,16 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const EmployeePage = lazy(() => import('./pages/EmployeePage'));
 const ExpensesPage = lazy(() => import('./pages/ExpensesPage'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const Roompage = lazy(() => import('./pages/RoomPage'));
+const RentPaymentPage = lazy(() => import('./pages/RentPaymentPage'));
+const StudentTable = lazy(() => import('./components/StudentTable'));
+
 
 const App = () => {
+  const { user } = useUser();
+  console.log(user?.role);
+
   return (
     <ErrorBoundary>
       <BrowserRouter>
@@ -32,8 +41,14 @@ const App = () => {
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
                 <Route path="/admin" element={<Dashboard />} />
+                <Route path="/students" element={<StudentTable />} />
                 <Route path="/employees" element={<EmployeePage />} />
                 <Route path="/expenses" element={<ExpensesPage />} />
+                <Route path="/rooms" element={<Roompage />} />
+                <Route path="/rent" element={<RentPaymentPage />} />
+                {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
+                  <Route path="/user" element={<UserManagement />} />
+                )}
               </Route>
             </Route>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, type JSX } from 'react';
 import { Home, Wifi, Camera, Shield, Zap, Coffee, Droplet, Wind, Car, MapPin, Phone, Mail, ChevronDown } from 'lucide-react';
+import { sendContactAPI } from '../service';
 
 interface FormData {
   firstName: string;
@@ -25,6 +26,7 @@ const HomePage: React.FC = () => {
 
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,12 +39,32 @@ const HomePage: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleSubmit = (): void => {
-    if (formData.firstName && formData.lastName && formData.email && formData.subject && formData.message) {
-      alert('Thank you for your message! We will get back to you soon.');
-      setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
-    } else {
+  const handleSubmit = async (): Promise<void> => {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.subject || !formData.message) {
       alert('Please fill in all fields');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // const response = await fetch('http://localhost:8080/api/contact/send', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(formData),
+      // });
+      const response = await sendContactAPI(formData)
+
+      if (response?.data) {
+        alert('✅ Thank you! Your message has been sent. Check your email for confirmation.');
+        setFormData({ firstName: '', lastName: '', email: '', subject: '', message: '' });
+      } else {
+        const error = response?.status;
+        alert(`❌ Failed to send: ${error}`);
+      }
+    } catch (err) {
+      alert('❌ Network error. Please try again later.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -113,7 +135,7 @@ const HomePage: React.FC = () => {
         <div className="absolute top-20 left-10 w-72 h-72 bg-amber-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-20 left-1/2 w-72 h-72 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
-        
+
         <div className="w-full px-4 sm:px-6 lg:px-8 py-24 relative z-10">
           <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center">
             <div className={`space-y-6 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
@@ -121,22 +143,22 @@ const HomePage: React.FC = () => {
                 <span className="text-blue-400 text-5xl inline-block animate-bounce">🦋</span>
               </div>
               <h1 className="text-7xl font-bold text-amber-600 mb-4 italic leading-tight animate-slide-in-left">
-                BEST<br/>LADIES<br/>HOSTEL
+                BEST<br />LADIES<br />HOSTEL
               </h1>
               <p className="text-3xl text-amber-500 font-semibold animate-slide-in-left animation-delay-200">Mambakkam - Tamil Nadu</p>
               <p className="text-lg text-gray-700 animate-slide-in-left animation-delay-400">Safe • Comfortable • Affordable</p>
             </div>
             <div className={`relative transition-all duration-1000 delay-300 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'}`}>
               <div className="absolute -top-4 -left-4 w-full h-full bg-amber-200 rounded-2xl transform rotate-3 transition-transform duration-500 hover:rotate-6"></div>
-              <img 
-                src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&h=450&fit=crop" 
-                alt="Beautiful landscape adventure" 
+              <img
+                src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&h=450&fit=crop"
+                alt="Beautiful landscape adventure"
                 className="relative rounded-2xl shadow-2xl w-full transform transition-all duration-500 hover:scale-105 hover:shadow-3xl"
               />
             </div>
           </div>
         </div>
-        
+
         {/* Scroll Down Indicator */}
         <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
           <ChevronDown className="w-8 h-8 text-amber-600" />
@@ -186,9 +208,9 @@ const HomePage: React.FC = () => {
           </div>
           <div className="max-w-4xl mx-auto bg-amber-50 p-8 rounded-2xl shadow-lg transform transition-all duration-500 hover:shadow-2xl hover:-translate-y-2">
             <p className="text-lg text-gray-700 leading-relaxed text-center">
-              We offer safe, comfortable, and affordable accommodation for students and working professionals. 
-              Our fully furnished spaces include modern amenities, high-speed Wi-Fi, daily housekeeping, and 
-              nutritious meals. Located in Mambakkam, we provide a secure, homely environment designed for 
+              We offer safe, comfortable, and affordable accommodation for students and working professionals.
+              Our fully furnished spaces include modern amenities, high-speed Wi-Fi, daily housekeeping, and
+              nutritious meals. Located in Mambakkam, we provide a secure, homely environment designed for
               convenience, community living, and a hassle-free lifestyle.
             </p>
           </div>
@@ -204,8 +226,8 @@ const HomePage: React.FC = () => {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
             {facilities.map((facility: Facility, index: number) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-4 hover:rotate-2 text-center border-2 border-transparent hover:border-amber-400"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
@@ -248,12 +270,12 @@ const HomePage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {galleryImages.map((image: string, index: number) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="relative overflow-hidden rounded-xl shadow-lg group transform transition-all duration-500 hover:scale-105 hover:shadow-2xl"
                 style={{ animationDelay: `${index * 150}ms` }}
               >
-                <img 
+                <img
                   src={image}
                   alt={`Gallery image ${index + 1}`}
                   className="w-full h-72 object-cover transform group-hover:scale-125 group-hover:rotate-2 transition-all duration-700"
@@ -318,9 +340,10 @@ const HomePage: React.FC = () => {
                 ></textarea>
                 <button
                   onClick={handleSubmit}
-                  className="w-full bg-linear-to-r from-amber-600 to-amber-500 text-white py-4 rounded-lg font-bold text-lg hover:from-amber-700 hover:to-amber-600 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 hover:scale-105"
+                  disabled={isLoading}
+                  className="w-full bg-linear-to-r from-amber-600 to-amber-500 text-white py-4 rounded-lg font-bold text-lg hover:from-amber-700 hover:to-amber-600 transition-all duration-300 shadow-lg hover:shadow-2xl transform hover:-translate-y-2 hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  Send Message
+                  {isLoading ? '⏳ Sending...' : 'Send Message'}
                 </button>
               </div>
             </div>
@@ -333,7 +356,7 @@ const HomePage: React.FC = () => {
                   <MapPin className="w-6 h-6 mt-1 shrink-0 animate-pulse" />
                   <div>
                     <h4 className="font-bold text-lg mb-2">Address:</h4>
-                    <p className="text-amber-50">No.54, Sudharshan Nagar, 2nd Street,<br/>Mambakkam, Chennai – 600127</p>
+                    <p className="text-amber-50">No.54, Sudharshan Nagar, 2nd Street,<br />Mambakkam, Chennai – 600127</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-4 transform transition-all duration-300 hover:translate-x-2">

@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { X, ChevronDown, Sparkles, Crown, TrendingUp } from 'lucide-react';
+import { X, ChevronDown, Sparkles, Crown, TrendingUp ,LayoutDashboard,Users,GraduationCap,Briefcase,CreditCard,UserCog, DoorOpen, type LucideIcon} from 'lucide-react';
 import { useUser } from '../context/UserContext';
-
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
 }
 
 interface MenuItem {
-  icon: string;
+  icon: LucideIcon;
   label: string;
   section: 'main' | 'manage';
   badge?: string;
@@ -24,17 +23,56 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const { user, logout } = useUser();
 
   const menuItems: MenuItem[] = [
-    { icon: '📊', label: 'Dashboard', section: 'main', badge: 'New', badgeColor: 'bg-green-400', path: '/admin' },
-    { icon: '👥', label: 'Employees', section: 'main', path: '/employees' },
-    // { icon: '🌐', label: 'Online Bookings', section: 'main', badge: '12', badgeColor: 'bg-blue-400', path: '/bookings/online' },
-    // { icon: '📴', label: 'Offline Bookings', section: 'main', path: '/bookings/offline' },
-    // { icon: '💼', label: 'Salaries', section: 'main', path: '/salaries' },
-    { icon: '💳', label: 'Expenses', section: 'main', badge: '5', badgeColor: 'bg-red-400', path: '/expenses' },
-    // { icon: '🏠', label: 'Rooms', section: 'manage', path: '/rooms' },
-    // { icon: '🔖', label: 'Manage Bookings', section: 'manage', path: '/manage-bookings' },
-    // { icon: '🔧', label: 'Maintenance', section: 'manage', path: '/maintenance' },
-    // { icon: '🌙', label: 'Other Expense', section: 'manage', path: '/other-expenses' },
-    // { icon: '📊', label: 'Reports', section: 'manage', path: '/reports' }
+    {
+      icon: LayoutDashboard,
+      label: "Dashboard",
+      section: "main",
+      badge: "New",
+      badgeColor: "bg-green-400",
+      path: "/admin",
+    },
+    {
+      icon: Users,
+      label: "Employees",
+      section: "main",
+      path: "/employees",
+    },
+    {
+      icon: GraduationCap,
+      label: "Students",
+      section: "main",
+      path: "/students",
+    },
+    {
+      icon: Briefcase,
+      label: "Rent",
+      section: "main",
+      path: "/rent",
+    },
+    {
+      icon: CreditCard,
+      label: "Expenses",
+      section: "main",
+      badge: "5",
+      badgeColor: "bg-red-400",
+      path: "/expenses",
+    },
+    {
+      icon: DoorOpen,
+      label: "Rooms",
+      section: "main",
+      path: "/rooms",
+    },
+    ...(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN"
+      ? [
+        {
+          icon: UserCog,
+          label: "User",
+          section: "main" as const,
+          path: "/user",
+        },
+      ]
+      : []),
   ];
 
   const handleNavigation = (path: string) => {
@@ -141,7 +179,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
 
                   <div className="flex items-center gap-3 flex-1">
                     <span className={`text-2xl transform transition-transform duration-300 ${isActive(item.path) ? 'scale-110' : 'group-hover:scale-110'}`}>
-                      {item.icon}
+                      <item.icon />
                     </span>
                     <span className="font-medium text-sm">{item.label}</span>
                   </div>
@@ -223,7 +261,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               {/* Dropdown Menu */}
               {isProfileOpen && (
                 <div className="absolute bottom-full left-4 right-4 mb-2 p-2 bg-white rounded-xl shadow-2xl border border-gray-200 animate-fade-in">
-                  <button
+                  {/* <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleNavigation('/profile');
@@ -249,7 +287,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     🔔 Notifications
-                  </button>
+                  </button> */}
                   <div className="border-t border-gray-200 my-2" />
                   <button
                     onClick={(e) => {
