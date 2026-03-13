@@ -303,3 +303,14 @@ export async function sendContactAPI(reqData: any) {
         throw e; // Throw the error instead of returning it
     }
 }
+
+export async function getDashboardSummary(params:any) {
+    try {
+        let endPoint = `dashboard/summary?${params}`;
+        let response = await instance.get(endPoint);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}

@@ -140,7 +140,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
           </div>
 
           {/* Stats Summary Card */}
-          <div className="mx-3 mt-4 mb-2 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
+          {/* <div className="mx-3 mt-4 mb-2 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-white/70 font-medium">Monthly Revenue</span>
               <TrendingUp size={14} className="text-green-300" />
@@ -150,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
               <span className="text-xs text-green-300">↑ 12.5%</span>
               <span className="text-xs text-white/50">vs last month</span>
             </div>
-          </div>
+          </div> */}
 
           {/* Menu Items */}
           <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">

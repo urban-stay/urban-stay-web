@@ -9,6 +9,7 @@ import {
   RefreshCw, AlertCircle, Loader2
 } from 'lucide-react';
 import { BASE_URL } from '../../config';
+import { getDashboardSummary } from '../service';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,9 +55,9 @@ async function fetchSummary(
     startMonth: String(monthNum(startMonth)),
     endMonth: String(monthNum(endMonth)),
   });
-  const res = await fetch(`${API_BASE}/summary?${params}`);
-  if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
-  return res.json();
+  const res = await getDashboardSummary(params);
+  // if (!res.ok) throw new Error(`API error ${res.status}: ${await res.text()}`);
+  return res?.data;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -190,13 +191,13 @@ const Dashboard: React.FC = () => {
       }}>
         {/* Logo + Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#6366f1,#818cf8)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={13} color="white" fill="white" />
             </div>
             <span style={{ fontWeight: 800, fontSize: 15, color: '#1e293b', letterSpacing: '-0.3px' }}>Vaultix</span>
           </div>
-          <div style={{ width: 1, height: 22, background: '#e2e8f0' }} />
+          <div style={{ width: 1, height: 22, background: '#e2e8f0' }} /> */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 15, fontWeight: 700, color: '#0f172a' }}>Financial Overview</span>
             <span style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>
@@ -255,18 +256,18 @@ const Dashboard: React.FC = () => {
             <RefreshCw size={14} className={loading ? 'spin' : ''} />
           </button>
 
-          <button style={{ borderRadius: 9, background: '#f8fafc', border: '1.5px solid #e2e8f0',  alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8' }}>
+          <button style={{ borderRadius: 9, background: '#f8fafc', border: '1.5px solid #e2e8f0', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8' }}>
             <Search size={14} />
           </button>
-          <button style={{ borderRadius: 9, background: '#f8fafc', border: '1.5px solid #e2e8f0',  alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8', position: 'relative' }}>
+          <button style={{ borderRadius: 9, background: '#f8fafc', border: '1.5px solid #e2e8f0', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#94a3b8', position: 'relative' }}>
             <Bell size={14} />
             {(data?.unpaidRentCount ?? 0) > 0 && (
               <span style={{ position: 'absolute', top: 6, right: 6, width: 6, height: 6, background: '#f43f5e', borderRadius: '50%', border: '1.5px solid #fff' }} />
             )}
           </button>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#a5b4fc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', cursor: 'pointer' }}>
+          {/* <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'linear-gradient(135deg,#6366f1,#a5b4fc)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: '#fff', cursor: 'pointer' }}>
             JD
-          </div>
+          </div> */}
         </div>
       </header>
 

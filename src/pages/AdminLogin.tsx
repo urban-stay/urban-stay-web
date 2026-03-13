@@ -247,6 +247,7 @@ const AdminLogin: React.FC = () => {
                     <button
                       type="button"
                       className="text-sm text-purple-400 hover:text-purple-300 transition-colors font-medium"
+                      onClick={() => navigate('/forgot-password')}
                     >
                       Forgot password?
                     </button>
@@ -278,7 +279,7 @@ const AdminLogin: React.FC = () => {
                 </form>
 
                 {/* Demo Credentials */}
-                <div className="pt-6 border-t border-white/10">
+                {/* <div className="pt-6 border-t border-white/10">
                   <div className="flex items-center gap-2 text-xs text-slate-400 mb-3">
                     <Sparkles className="w-4 h-4" />
                     <span>Demo Credentials</span>
@@ -297,7 +298,7 @@ const AdminLogin: React.FC = () => {
                       </code>
                     </p>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Footer */}

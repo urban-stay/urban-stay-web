@@ -216,16 +216,16 @@ const UserManagement: React.FC = () => {
 
   const validateForm = useCallback((): boolean => {
     const newErrors: Partial<Record<keyof User, string>> = {};
-    if (!formData.username || formData.username.length < 3 || formData.username.length > 50)
-      newErrors.username = 'Username must be 3–50 characters';
+    // if (!formData.username || formData.username.length < 3 || formData.username.length > 50)
+    //   newErrors.username = 'Username must be 3–50 characters';
     if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = 'Enter a valid email address';
     if (!formData.name || formData.name.length < 2 || formData.name.length > 100)
       newErrors.name = 'Name must be 2–100 characters';
-    if (!formData.code || formData.code.length < 2 || formData.code.length > 50)
-      newErrors.code = 'Code must be 2–50 characters';
-    if (modalMode === 'add' && (!formData.password || formData.password.length < 6))
-      newErrors.password = 'Password must be at least 6 characters';
+    // if (!formData.code || formData.code.length < 2 || formData.code.length > 50)
+    //   newErrors.code = 'Code must be 2–50 characters';
+    // if (modalMode === 'add' && (!formData.password || formData.password.length < 6))
+    //   newErrors.password = 'Password must be at least 6 characters';
     if (formData.description && formData.description.length > 500)
       newErrors.description = 'Description max 500 characters';
     setErrors(newErrors);
@@ -595,12 +595,12 @@ const UserManagement: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <Field label="Full Name" name="name" required formData={formData} errors={errors} onChange={handleInputChange} />
-                  <Field label="Code" name="code" required disabled={modalMode === 'edit'} formData={formData} errors={errors} onChange={handleInputChange} />
-                  <Field label="Username" name="username" required formData={formData} errors={errors} onChange={handleInputChange} />
+                  {/* <Field label="Code" name="code" required disabled={modalMode === 'edit'} formData={formData} errors={errors} onChange={handleInputChange} /> */}
+                  {/* <Field label="Username" name="username" required formData={formData} errors={errors} onChange={handleInputChange} /> */}
                   <Field label="Email Address" name="email" required type="email" disabled={modalMode === 'edit'} formData={formData} errors={errors} onChange={handleInputChange} />
-                  {modalMode === 'add' && (
+                  {/* {modalMode === 'add' && (
                     <Field label="Password" name="password" required type="password" formData={formData} errors={errors} onChange={handleInputChange} />
-                  )}
+                  )} */}
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
                       Role <span className="text-rose-500">*</span>
@@ -632,21 +632,12 @@ const UserManagement: React.FC = () => {
                   </div>
                   <div>
                     <label className="flex items-center gap-3 cursor-pointer group w-fit">
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          name="active"
-                          checked={formData.active}
-                          onChange={handleInputChange}
-                          className="sr-only"
-                        />
-                        <div
-                          onClick={() => setFormData(prev => ({ ...prev, active: !prev.active }))}
-                          className={`w-10 h-6 rounded-full border-2 transition-all duration-300 cursor-pointer flex items-center px-0.5
-                            ${formData.active ? 'bg-indigo-500 border-indigo-500' : 'bg-slate-200 border-slate-300'}`}
-                        >
-                          <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${formData.active ? 'translate-x-4' : 'translate-x-0'}`} />
-                        </div>
+                      <div
+                        onClick={() => setFormData(prev => ({ ...prev, active: !prev.active }))}
+                        className={`w-10 h-6 rounded-full border-2 transition-all duration-300 cursor-pointer flex items-center px-0.5
+                        ${formData.active ? 'bg-indigo-500 border-indigo-500' : 'bg-slate-200 border-slate-300'}`}
+                      >
+                        <div className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-300 ${formData.active ? 'translate-x-4' : 'translate-x-0'}`} />
                       </div>
                       <span className="text-sm font-semibold text-slate-700 group-hover:text-indigo-600 transition-colors select-none">
                         Active Account

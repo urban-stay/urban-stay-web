@@ -18,6 +18,7 @@ const UserManagement = lazy(() => import('./pages/UserManagement'));
 const Roompage = lazy(() => import('./pages/RoomPage'));
 const RentPaymentPage = lazy(() => import('./pages/RentPaymentPage'));
 const StudentTable = lazy(() => import('./components/StudentTable'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 
 
 const App = () => {
@@ -36,6 +37,7 @@ const App = () => {
 
             {/* Login Route - Public (but redirect if already authenticated) */}
             <Route path="/login" element={<AdminLogin />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
 
             {/* Protected Admin Routes - Requires Authentication */}
             <Route element={<ProtectedRoute />}>
