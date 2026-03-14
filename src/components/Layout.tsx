@@ -1,4 +1,4 @@
-import React, { useState, useEffect, type ReactNode } from 'react';
+import  { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 
 // interface LayoutProps {

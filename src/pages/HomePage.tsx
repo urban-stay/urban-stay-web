@@ -24,13 +24,13 @@ const HomePage: React.FC = () => {
     message: ''
   });
 
-  const [scrollY, setScrollY] = useState(0);
+  // const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      // setScrollY(window.scrollY);
     };
 
     window.addEventListener('scroll', handleScroll);

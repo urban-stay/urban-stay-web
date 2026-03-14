@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { X, ChevronDown, Sparkles, Crown, TrendingUp ,LayoutDashboard,Users,GraduationCap,Briefcase,CreditCard,UserCog, DoorOpen, type LucideIcon} from 'lucide-react';
+import { X, ChevronDown, Sparkles, Crown, LayoutDashboard, Users, GraduationCap, Briefcase, CreditCard, UserCog, DoorOpen, type LucideIcon } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 interface SidebarProps {
   isOpen: boolean;

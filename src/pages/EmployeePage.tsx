@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, memo } from 'react';
 import {
   Search, Plus, Edit2, Trash2, X, Users, Clock, Phone,
-  Mail, CreditCard, Building, UserCheck, Eye,
+  Mail, CreditCard, Building, Eye,
   Download, FileText, IndianRupee, CheckCircle, Loader2, AlertCircle,
-  ChevronDown, Upload, ImageIcon, ShieldCheck, BookOpen, Paperclip
+  ImageIcon, ShieldCheck, BookOpen, Paperclip
 } from 'lucide-react';
-import { createEmployeesAPI, deleteEmployeeByIdAPI, getEmployeesAPI, updateEmployeeByIdAPI } from '../service';
+import { deleteEmployeeByIdAPI, getEmployeesAPI } from '../service';
 import { useUser } from '../context/UserContext';
 import { BASE_URL } from '../../config';
 

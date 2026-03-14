@@ -5,10 +5,9 @@ import {
 } from 'recharts';
 import {
   TrendingUp, TrendingDown, Wallet, Bell, Search,
-  Calendar, ArrowUpRight, ArrowDownRight, Zap,
+  Calendar, ArrowUpRight, ArrowDownRight,
   RefreshCw, AlertCircle, Loader2
 } from 'lucide-react';
-import { BASE_URL } from '../../config';
 import { getDashboardSummary } from '../service';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -40,7 +39,6 @@ interface DashboardSummaryDTO {
 
 // ─── API Config ───────────────────────────────────────────────────────────────
 
-const API_BASE = `${BASE_URL}/dashboard`
 
 const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const monthNum = (m: string) => months.indexOf(m) + 1; // "Jan" → 1

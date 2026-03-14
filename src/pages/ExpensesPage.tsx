@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Search, Plus, Edit2, Trash2, X, Calendar, Tag, TrendingUp,
-  TrendingDown, Receipt, FileText, Download, Upload, Paperclip,
-  ArrowUpRight, Wallet, Clock, CheckCircle2, AlertCircle
+  Search, Plus, Edit2, Trash2, X, Calendar, Tag,
+  Receipt, FileText, Download, Upload, Paperclip,
+  Wallet, Clock, CheckCircle2,
 } from 'lucide-react';
 import { createExpensesAPI, getExpensesAPI, updateExpensesAPI } from '../service';
 import { useUser } from '../context/UserContext';
@@ -581,7 +581,7 @@ const ExpensesPage: React.FC = () => {
       const r = await getExpensesAPI();
       if (r?.data) {
         console.log(r?.data);
-        
+
         setExpenses(r.data);
         setFilteredExpenses(r.data);
       }
@@ -654,7 +654,7 @@ const ExpensesPage: React.FC = () => {
 
   const TH_COLS = ['Date', 'Expense', 'Type', 'Category', 'Amount', 'Payment', 'Status', 'Bill', ...(showActs ? ['Actions'] : [])];
 
-console.log("filteredExpenses==>",filteredExpenses);
+  console.log("filteredExpenses==>", filteredExpenses);
 
   return (
     <div className="ex">
