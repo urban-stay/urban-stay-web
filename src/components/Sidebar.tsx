@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { X, ChevronDown, Sparkles, Crown, LayoutDashboard, Users, GraduationCap, Briefcase, CreditCard, UserCog, DoorOpen, type LucideIcon } from 'lucide-react';
+import {
+  X, ChevronDown, Sparkles, Crown,
+  LayoutDashboard, Users, GraduationCap,
+  Briefcase, CreditCard, UserCog, DoorOpen,
+  type LucideIcon
+} from 'lucide-react';
 import { useUser } from '../context/UserContext';
+
 interface SidebarProps {
   isOpen: boolean;
   toggleSidebar: () => void;
@@ -23,315 +29,275 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
   const { user, logout } = useUser();
 
   const menuItems: MenuItem[] = [
-    {
-      icon: LayoutDashboard,
-      label: "Dashboard",
-      section: "main",
-      badge: "New",
-      badgeColor: "bg-green-400",
-      path: "/admin",
-    },
-    {
-      icon: Users,
-      label: "Employees",
-      section: "main",
-      path: "/employees",
-    },
-    {
-      icon: GraduationCap,
-      label: "Students",
-      section: "main",
-      path: "/students",
-    },
-    {
-      icon: Briefcase,
-      label: "Rent",
-      section: "main",
-      path: "/rent",
-    },
-    {
-      icon: CreditCard,
-      label: "Expenses",
-      section: "main",
-      badge: "5",
-      badgeColor: "bg-red-400",
-      path: "/expenses",
-    },
-    {
-      icon: DoorOpen,
-      label: "Rooms",
-      section: "main",
-      path: "/rooms",
-    },
-    ...(user?.role === "ADMIN" || user?.role === "SUPER_ADMIN"
-      ? [
-        {
-          icon: UserCog,
-          label: "User",
-          section: "main" as const,
-          path: "/user",
-        },
-      ]
+    { icon: LayoutDashboard, label: 'Dashboard', section: 'main', path: '/admin' },
+    { icon: Users,           label: 'Employees', section: 'main', path: '/employees' },
+    { icon: GraduationCap,  label: 'Students',  section: 'main', path: '/students' },
+    { icon: Briefcase,      label: 'Rent',       section: 'main', path: '/rent' },
+    { icon: CreditCard,     label: 'Expenses',   section: 'main', path: '/expenses' },
+    { icon: DoorOpen,       label: 'Rooms',      section: 'main', path: '/rooms' },
+    ...(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
+      ? [{ icon: UserCog, label: 'User', section: 'main' as const, path: '/user' }]
       : []),
   ];
 
   const handleNavigation = (path: string) => {
     navigate(path);
-    // Close sidebar on mobile after navigation
-    if (window.innerWidth < 1024) {
-      toggleSidebar();
-    }
+    if (window.innerWidth < 1024) toggleSidebar();
   };
 
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <>
-      {/* Mobile Overlay with Blur */}
+      <style>{`
+        /* Desktop: sidebar always visible, no JS needed */
+        @media (min-width: 1024px) {
+          .sidebar-panel { transform: translateX(0) !important; }
+          .sidebar-overlay { display: none !important; }
+          .sidebar-close-btn { display: none !important; }
+        }
+      `}</style>
+      {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
           onClick={toggleSidebar}
+          className="sidebar-overlay"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(2px)',
+            zIndex: 40,
+          }}
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar panel */}
       <aside
-        className={`
-          fixed top-0 left-0 h-full bg-linear-to-br from-[#4A3FD8] via-[#5B4FE9] to-[#7B6FFF] 
-          text-white w-72 transform transition-all duration-500 ease-out z-50 shadow-2xl
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          height: '100%',
+          width: 288,
+          background: 'linear-gradient(135deg, #4A3FD8 0%, #5B4FE9 50%, #7B6FFF 100%)',
+          color: '#fff',
+          zIndex: 50,
+          boxShadow: '4px 0 24px rgba(0,0,0,0.18)',
+          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.35s cubic-bezier(0.4,0,0.2,1)',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+        className="sidebar-panel"
       >
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-300 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+        {/* Decorative blobs */}
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.1, pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', top: 0, right: 0, width: 256, height: 256, background: '#fff', borderRadius: '50%', filter: 'blur(60px)', transform: 'translate(50%,-50%)' }} />
+          <div style={{ position: 'absolute', bottom: 0, left: 0, width: 256, height: 256, background: '#c4b5fd', borderRadius: '50%', filter: 'blur(60px)', transform: 'translate(-50%,50%)' }} />
         </div>
 
-        <div className="relative flex flex-col h-full">
-          {/* Logo Section with Premium Badge */}
-          <div className="p-6 border-b border-white/10 backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-3">
+        <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%' }}>
+
+          {/* Logo */}
+          <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div
-                className="flex items-center gap-2 cursor-pointer"
+                style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}
                 onClick={() => handleNavigation('/admin')}
               >
-                <div className="w-10 h-10 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center border border-white/20 shadow-lg">
-                  <Crown className="text-yellow-300" size={24} />
+                <div style={{
+                  width: 40, height: 40,
+                  background: 'rgba(255,255,255,0.1)',
+                  borderRadius: 12,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                }}>
+                  <Crown size={22} color="#fde68a" />
                 </div>
                 <div>
-                  <h5 className="text-xl font-bold tracking-tight">The Urban Stay</h5>
-                  <p className="text-xs text-white/60 flex items-center gap-1">
-                    <Sparkles size={10} />
-                    Premium Dashboard
-                  </p>
+                  <div style={{ fontWeight: 700, fontSize: 17, letterSpacing: '-0.3px' }}>The Urban Stay</div>
+                  <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 1 }}>
+                    <Sparkles size={10} /> Premium Dashboard
+                  </div>
                 </div>
               </div>
+
+              {/* Close button — mobile only */}
               <button
                 onClick={toggleSidebar}
-                className="lg:hidden text-white hover:bg-white/10 p-2 rounded-lg transition-all hover:rotate-90 duration-300"
+                className="sidebar-close-btn"
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  border: 'none',
+                  borderRadius: 8,
+                  padding: 6,
+                  color: '#fff',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s',
+                }}
               >
                 <X size={20} />
               </button>
             </div>
           </div>
 
-          {/* Stats Summary Card */}
-          {/* <div className="mx-3 mt-4 mb-2 p-4 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-white/70 font-medium">Monthly Revenue</span>
-              <TrendingUp size={14} className="text-green-300" />
+          {/* Nav */}
+          <nav style={{ flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '0 12px 8px' }}>
+              Main Menu
             </div>
-            <div className="text-2xl font-bold">₹6,32,000</div>
-            <div className="flex items-center gap-1 mt-1">
-              <span className="text-xs text-green-300">↑ 12.5%</span>
-              <span className="text-xs text-white/50">vs last month</span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {menuItems.filter(i => i.section === 'main').map((item, idx) => {
+                const active = isActive(item.path);
+                return (
+                  <button
+                    key={item.label}
+                    onClick={() => handleNavigation(item.path)}
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: '11px 16px',
+                      borderRadius: 12,
+                      border: 'none',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: 'inherit',
+                      fontSize: 14,
+                      fontWeight: 500,
+                      transition: 'all 0.2s',
+                      position: 'relative',
+                      background: active ? '#fff' : 'transparent',
+                      color: active ? '#5B4FE9' : 'rgba(255,255,255,0.88)',
+                      boxShadow: active ? '0 4px 14px rgba(0,0,0,0.15)' : 'none',
+                      transform: active ? 'scale(1.02)' : 'none',
+                      animationDelay: `${idx * 40}ms`,
+                    }}
+                    onMouseEnter={e => {
+                      if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255,255,255,0.1)';
+                    }}
+                    onMouseLeave={e => {
+                      if (!active) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                    }}
+                  >
+                    {active && (
+                      <div style={{
+                        position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
+                        width: 3, height: 28, background: '#5B4FE9', borderRadius: '0 4px 4px 0',
+                      }} />
+                    )}
+                    <item.icon size={20} />
+                    <span style={{ flex: 1 }}>{item.label}</span>
+                    {item.badge && (
+                      <span style={{
+                        background: item.badgeColor ?? 'rgba(255,255,255,0.2)',
+                        padding: '2px 8px', borderRadius: 99, fontSize: 11, fontWeight: 700, color: '#fff',
+                      }}>{item.badge}</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          </div> */}
-
-          {/* Menu Items */}
-          <nav className="flex-1 overflow-y-auto px-3 py-4 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-            <div className="space-y-1">
-              <div className="px-3 py-2">
-                <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Main Menu</p>
-              </div>
-              {menuItems.filter(item => item.section === 'main').map((item, index) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleNavigation(item.path)}
-                  style={{ animationDelay: `${index * 50}ms` }}
-                  className={`
-                    w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                    group relative overflow-hidden
-                    ${isActive(item.path)
-                      ? 'bg-white text-[#5B4FE9] shadow-2xl scale-105'
-                      : 'text-white/90 hover:bg-white/10 hover:translate-x-1'
-                    }
-                  `}
-                >
-                  {/* Active Indicator */}
-                  {isActive(item.path) && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#5B4FE9] rounded-r-full" />
-                  )}
-
-                  <div className="flex items-center gap-3 flex-1">
-                    <span className={`text-2xl transform transition-transform duration-300 ${isActive(item.path) ? 'scale-110' : 'group-hover:scale-110'}`}>
-                      <item.icon />
-                    </span>
-                    <span className="font-medium text-sm">{item.label}</span>
-                  </div>
-
-                  {/* Badge */}
-                  {item.badge && (
-                    <span className={`${item.badgeColor || 'bg-white/20'} px-2 py-0.5 rounded-full text-xs font-bold text-white shadow-lg`}>
-                      {item.badge}
-                    </span>
-                  )}
-
-                  {/* Hover Effect */}
-                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
-                </button>
-              ))}
-            </div>
-
-            {/* <div className="mt-6 pt-4 space-y-1">
-              <div className="px-3 py-2">
-                <p className="text-xs font-semibold text-white/50 uppercase tracking-wider">Management</p>
-              </div>
-              {menuItems.filter(item => item.section === 'manage').map((item, index) => (
-                <button
-                  key={item.label}
-                  onClick={() => handleNavigation(item.path)}
-                  style={{ animationDelay: `${(index + 6) * 50}ms` }}
-                  className={`
-                    w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all duration-300
-                    group relative overflow-hidden
-                    ${isActive(item.path)
-                      ? 'bg-white text-[#5B4FE9] shadow-2xl scale-105' 
-                      : 'text-white/90 hover:bg-white/10 hover:translate-x-1'
-                    }
-                  `}
-                >
-                  {isActive(item.path) && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#5B4FE9] rounded-r-full" />
-                  )}
-                  
-                  <div className="flex items-center gap-3 flex-1">
-                    <span className={`text-2xl transform transition-transform duration-300 ${isActive(item.path) ? 'scale-110' : 'group-hover:scale-110'}`}>
-                      {item.icon}
-                    </span>
-                    <span className="font-medium text-sm">{item.label}</span>
-                  </div>
-
-                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-xl" />
-                </button>
-              ))}
-            </div> */}
           </nav>
 
-          {/* User Profile Section - Enhanced */}
-          <div className="p-4 border-t border-white/10 backdrop-blur-sm">
+          {/* User profile */}
+          <div style={{ padding: 16, borderTop: '1px solid rgba(255,255,255,0.1)', position: 'relative' }}>
             <div
-              onClick={() => setIsProfileOpen(!isProfileOpen)}
-              className="relative p-4 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/15 transition-all cursor-pointer group shadow-lg"
+              onClick={() => setIsProfileOpen(v => !v)}
+              style={{
+                padding: 14,
+                borderRadius: 14,
+                background: 'rgba(255,255,255,0.1)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                transition: 'background 0.2s',
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.15)'}
+              onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = 'rgba(255,255,255,0.1)'}
             >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-linear-to-br from-yellow-400 via-orange-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-lg ring-2 ring-white/30">
-                    F
-                  </div>
-                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white shadow-sm" />
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: 'linear-gradient(135deg,#fbbf24,#f97316,#ec4899)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontWeight: 700, fontSize: 18, color: '#fff',
+                  boxShadow: '0 0 0 2px rgba(255,255,255,0.3)',
+                }}>
+                  {(user?.name?.[0] ?? 'A').toUpperCase()}
                 </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-white flex items-center gap-2">
-                    {user?.name || 'Admin User'}
-                    <Crown size={14} className="text-yellow-300" />
-                  </div>
-                  <div className="text-xs text-white/70">Administrator</div>
-                </div>
-                <ChevronDown
-                  size={18}
-                  className={`text-white/70 transition-transform duration-300 ${isProfileOpen ? 'rotate-180' : ''}`}
-                />
+                <div style={{
+                  position: 'absolute', bottom: 0, right: 0,
+                  width: 12, height: 12, background: '#4ade80',
+                  borderRadius: '50%', border: '2px solid #5B4FE9',
+                }} />
               </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  {user?.name ?? 'Admin User'}
+                  <Crown size={13} color="#fde68a" />
+                </div>
+                <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)' }}>Administrator</div>
+              </div>
+              <ChevronDown
+                size={17}
+                style={{
+                  color: 'rgba(255,255,255,0.6)',
+                  transform: isProfileOpen ? 'rotate(180deg)' : 'none',
+                  transition: 'transform 0.3s',
+                  flexShrink: 0,
+                }}
+              />
+            </div>
 
-              {/* Dropdown Menu */}
-              {isProfileOpen && (
-                <div className="absolute bottom-full left-4 right-4 mb-2 p-2 bg-white rounded-xl shadow-2xl border border-gray-200 animate-fade-in">
-                  {/* <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/profile');
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    👤 View Profile
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/settings');
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    ⚙️ Settings
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleNavigation('/notifications');
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    🔔 Notifications
-                  </button> */}
-                  <div className="border-t border-gray-200 my-2" />
+            {/* Dropdown */}
+            {isProfileOpen && (
+              <div style={{
+                position: 'absolute',
+                bottom: '100%',
+                left: 16,
+                right: 16,
+                marginBottom: 8,
+                background: '#fff',
+                borderRadius: 12,
+                boxShadow: '0 -8px 24px rgba(0,0,0,0.15)',
+                border: '1px solid #e2e8f0',
+                padding: 8,
+                zIndex: 10,
+              }}>
+                <div style={{ borderTop: '1px solid #f1f5f9', marginTop: 4, paddingTop: 4 }}>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       logout();
                       handleNavigation('/');
                     }}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    style={{
+                      width: '100%', textAlign: 'left', padding: '8px 12px',
+                      fontSize: 13, color: '#dc2626',
+                      background: 'none', border: 'none', borderRadius: 8,
+                      cursor: 'pointer', fontFamily: 'inherit',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.background = '#fef2f2'}
+                    onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.background = 'none'}
                   >
                     🚪 Logout
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </aside>
-
-      <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 4px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-        }
-        .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-          background: rgba(255, 255, 255, 0.3);
-        }
-      `}</style>
     </>
   );
 };

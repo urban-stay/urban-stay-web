@@ -304,10 +304,54 @@ export async function sendContactAPI(reqData: any) {
     }
 }
 
-export async function getDashboardSummary(params:any) {
+export async function getDashboardSummary(params: any) {
     try {
         let endPoint = `dashboard/summary?${params}`;
         let response = await instance.get(endPoint);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function getMonthResAPI(year: any, month: any) {
+    try {
+        let endPoint = `salary/month?year=${year}&month=${month}`;
+        let response = await instance.get(endPoint);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function getHistResAPI(employeeId: any) {
+    try {
+        let endPoint = `salary/employee/${employeeId}`;
+        let response = await instance.get(endPoint);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function markSalaryAPI(reqData: any) {
+    try {
+        let endPoint = `salary/mark`;
+        let response = await instance.post(endPoint,reqData);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function deleteSalaryAPI(id: any) {
+    try {
+        let endPoint = `salary/${id}`;
+        let response = await instance.delete(endPoint);
         return response;
     } catch (e) {
         console.log(e + " Occured! Please Try again");
