@@ -494,7 +494,7 @@ const MonthlyList: React.FC<{
                     const realIdx = (page - 1) * PAGE_SIZE + i;
                     const record = getRecord(student.id);
                     const status: PaymentStatus = record?.status ?? 'Unpaid';
-                    const ss = STATUS_STYLES[status];
+                    // const ss = STATUS_STYLES[status];
 
                     return (
                         <div key={student.id}
@@ -661,7 +661,7 @@ export const RentPaymentPage: React.FC = () => {
     const unpaidThisMonth = activeStudents.length - paidThisMonth;
 
     // Estimated collection
-    const totalDue = activeStudents.reduce((sum, s) => sum + getMonthlyFeeNumber(s.monthlyFee), 0);
+    // const totalDue = activeStudents.reduce((sum, s) => sum + getMonthlyFeeNumber(s.monthlyFee), 0);
     const totalCollected = activeStudents.reduce((sum, s) => {
         const rec = records.get(`${s.id}-${year}-${month}`);
         return sum + (rec?.paidAmount ? Number(rec.paidAmount) : 0);

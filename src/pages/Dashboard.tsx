@@ -131,7 +131,7 @@ const TenantSelector = ({
   onChange: (schema: string) => void;
   loading: boolean;
 }) => {
-  const selected = tenants.find(t => t.schemaName === selectedSchema);
+  // const selected = tenants.find(t => t.schemaName === selectedSchema);
 
   return (
     <div style={{
