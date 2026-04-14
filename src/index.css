@@ -79,6 +79,21 @@ input[type='number'] {
   appearance: textfield;
 }
 
+/* Hide scrollbar for Chrome, Safari and Edge */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+html {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE/Edge */
+body {
+  -ms-overflow-style: none;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;

@@ -20,7 +20,13 @@ instance.interceptors.request.use(
             if (config.data && !(config.data instanceof FormData)) {
                 config.headers["Content-Type"] = "application/json";
             }
-
+            const schemaName = sessionStorage.getItem("schemaName");
+            console.log("Schema Name from sessionStorage:", schemaName);
+            if (schemaName && schemaName !== '') {
+                if (!config.url?.includes("auth/")) {
+                    config.headers["X-Tenant-ID"] = schemaName;
+                }
+            }
             const token = sessionStorage.getItem("authToken");
             if (token) {
                 config.headers["Authorization"] = `Bearer ${token}`;
@@ -293,6 +299,39 @@ export async function getRoomsAPI() {
     }
 }
 
+export async function createRoomAPI(reqData: any) {
+    try {
+        let endPoint = `rooms`;
+        let response = await instance.post(endPoint, reqData);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function updateRoomAPI(id: any, reqData: any) {
+    try {
+        let endPoint = `rooms/${id}`;
+        let response = await instance.put(endPoint, reqData);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function deleteRoomAPI(id: any) {
+    try {
+        let endPoint = `rooms/${id}`;
+        let response = await instance.delete(endPoint);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
 export async function sendContactAPI(reqData: any) {
     try {
         let endPoint = `contact/send`;
@@ -340,7 +379,7 @@ export async function getHistResAPI(employeeId: any) {
 export async function markSalaryAPI(reqData: any) {
     try {
         let endPoint = `salary/mark`;
-        let response = await instance.post(endPoint,reqData);
+        let response = await instance.post(endPoint, reqData);
         return response;
     } catch (e) {
         console.log(e + " Occured! Please Try again");
@@ -352,6 +391,39 @@ export async function deleteSalaryAPI(id: any) {
     try {
         let endPoint = `salary/${id}`;
         let response = await instance.delete(endPoint);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function getAllTenantAPI() {
+    try {
+        let endPoint = `tenant/all`;
+        let response = await instance.get(endPoint);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function createTenantAPI(reqData: any) {
+    try {
+        let endPoint = `tenant/create`;
+        let response = await instance.post(endPoint, reqData);
+        return response;
+    } catch (e) {
+        console.log(e + " Occured! Please Try again");
+        throw e; // Throw the error instead of returning it
+    }
+}
+
+export async function updateTenantAPI(reqData: any) {
+    try {
+        let endPoint = `tenant/update`;
+        let response = await instance.put(endPoint, reqData);
         return response;
     } catch (e) {
         console.log(e + " Occured! Please Try again");

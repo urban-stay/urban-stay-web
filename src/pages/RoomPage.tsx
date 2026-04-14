@@ -1,6 +1,7 @@
 import React, { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import axios, { AxiosError } from 'axios';
 import { Bed, Plus, Edit, Trash2, Search, SlidersHorizontal, Snowflake, Wind, X, CheckCircle, AlertCircle, Users, ChevronDown } from 'lucide-react';
+import { createRoomAPI, deleteRoomAPI, getRoomsAPI, updateRoomAPI } from '../service';
 
 const API_BASE_URL = 'http://localhost:2001/urbanStay/rooms';
 
@@ -82,7 +83,7 @@ const RoomPage: React.FC = () => {
     const fetchRooms = async (): Promise<void> => {
         setLoading(true);
         try {
-            const response = await axios.get<Room[]>(API_BASE_URL);
+            const response = await getRoomsAPI()
             setRooms(response.data);
             setFilteredRooms(response.data);
             setError('');
@@ -118,10 +119,12 @@ const RoomPage: React.FC = () => {
         try {
             const roomData = { ...currentRoom, pricePerMonth: currentRoom.pricePerMonth ? parseFloat(currentRoom.pricePerMonth) : undefined };
             if (editMode && currentRoom.id) {
-                await axios.put(`${API_BASE_URL}/${currentRoom.id}`, roomData);
+                // await axios.put(`${API_BASE_URL}/${currentRoom.id}`, roomData);
+                await updateRoomAPI(currentRoom.id, roomData);
                 setSuccess('Room updated successfully!');
             } else {
-                await axios.post(API_BASE_URL, roomData);
+                // await axios.post(API_BASE_URL, roomData);
+                await createRoomAPI(roomData);
                 setSuccess('Room created successfully!');
             }
             fetchRooms();
@@ -154,7 +157,8 @@ const RoomPage: React.FC = () => {
         if (window.confirm('Are you sure you want to delete this room?')) {
             setLoading(true);
             try {
-                await axios.delete(`${API_BASE_URL}/${id}`);
+                // await axios.delete(`${API_BASE_URL}/${id}`);
+                await deleteRoomAPI(id);
                 setSuccess('Room deleted successfully!');
                 fetchRooms();
                 setTimeout(() => setSuccess(''), 4000);

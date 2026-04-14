@@ -4,7 +4,8 @@ import {
   X, ChevronDown, Sparkles, Crown,
   LayoutDashboard, Users, GraduationCap,
   Briefcase, CreditCard, UserCog, DoorOpen,
-  type LucideIcon
+  type LucideIcon,
+  Building2
 } from 'lucide-react';
 import { useUser } from '../context/UserContext';
 
@@ -35,6 +36,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, toggleSidebar }) => {
     { icon: Briefcase,      label: 'Rent',       section: 'main', path: '/rent' },
     { icon: CreditCard,     label: 'Expenses',   section: 'main', path: '/expenses' },
     { icon: DoorOpen,       label: 'Rooms',      section: 'main', path: '/rooms' },
+    ...(user?.role === 'SUPER_ADMIN'
+    ? [{ icon: Building2, label: 'Tenant', section: 'main' as const, path: '/tenant' }]
+    : []),
     ...(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'
       ? [{ icon: UserCog, label: 'User', section: 'main' as const, path: '/user' }]
       : []),

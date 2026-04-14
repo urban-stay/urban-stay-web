@@ -91,7 +91,8 @@ const ForgotPassword: React.FC = () => {
         setError('');
         setIsLoading(true);
         try {
-            await forgotPasswordAPI(email);
+            const emailLower = email.trim().toLowerCase();
+            await forgotPasswordAPI(emailLower);
             setStep('otp');
             startCountdown();
         } catch (err: any) {

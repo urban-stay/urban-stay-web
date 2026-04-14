@@ -40,10 +40,23 @@ const AdminLogin: React.FC = () => {
       const response = result.data;
       login(response.token, response.user);
       // ✅ Save JWT + user info
+      // Store auth token
       sessionStorage.setItem('authToken', response.token);
+
+      // Store user details
       sessionStorage.setItem('userEmail', response.user.email);
       sessionStorage.setItem('userName', response.user.name);
       sessionStorage.setItem('userId', String(response.user.id));
+      sessionStorage.setItem('userRole', response.user.role);
+
+      // Store tenant details (important for multi-tenant apps)
+      sessionStorage.setItem('tenantId', response.tenantId);
+      sessionStorage.setItem('tenantCode', response.tenantCode);
+      sessionStorage.setItem('schemaName', response.schemaName);
+
+      // Optional flags
+      sessionStorage.setItem('isTenantActive', String(response.tenantActive));
+      sessionStorage.setItem('isUserActive', String(response.user.active));
 
       // ✅ Navigate after successful login
       navigate('/admin');

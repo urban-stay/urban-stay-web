@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-
+import urbanlogo from '../assets/urbanlogo.png';
 const Layout = () => {
   const [scrollY, setScrollY] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
@@ -38,35 +38,29 @@ const Layout = () => {
     <div className="min-h-screen flex flex-col">
       {/* ─── HEADER ─────────────────────────────────────────── */}
       <header
-        className={`bg-white shadow-md fixed w-full top-0 z-50 transition-all duration-300 ${
-          scrollY > 50 ? 'py-1' : 'py-0'
-        }`}
+        className={`bg-white shadow-md fixed w-full top-0 z-50 transition-all duration-300 ${scrollY > 50 ? 'py-1' : 'py-0'
+          }`}
       >
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16 sm:h-18 md:h-20">
 
             {/* Logo */}
             <div
-              className={`flex items-center gap-2 sm:gap-3 transition-all duration-500 ${
-                isVisible ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'
-              }`}
+              className={`flex items-center gap-2 sm:gap-3 transition-all duration-500 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-20 opacity-0'
+                }`}
             >
-              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 bg-amber-100 rounded-lg flex items-center justify-center border-2 border-amber-600 hover:rotate-12 transition-transform duration-300 flex-shrink-0">
-                <span className="text-amber-700 text-sm sm:text-base md:text-lg lg:text-xl font-bold">TUS</span>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-amber-700 leading-tight truncate">
-                  The Urban Stay
-                </p>
-                <p className="text-xs sm:text-sm text-gray-600 truncate">A Safe Haven</p>
-              </div>
+              <img
+                src={urbanlogo}
+                alt="The Urban Stay Logo"
+                style={{ width: 200, height: 200 }}
+                className="object-contain transition-transform duration-300"
+              />
             </div>
 
             {/* Desktop nav */}
             <ul
-              className={`hidden md:flex space-x-6 lg:space-x-8 transition-all duration-700 ${
-                isVisible ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
-              }`}
+              className={`hidden md:flex space-x-6 lg:space-x-8 transition-all duration-700 ${isVisible ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
+                }`}
             >
               {navLinks.map(({ href, label }) => (
                 <li key={href}>
@@ -89,19 +83,16 @@ const Layout = () => {
               aria-expanded={menuOpen}
             >
               <span
-                className={`block w-6 h-0.5 bg-amber-700 rounded transition-all duration-300 ${
-                  menuOpen ? 'rotate-45 translate-y-2' : ''
-                }`}
+                className={`block w-6 h-0.5 bg-amber-700 rounded transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''
+                  }`}
               />
               <span
-                className={`block w-6 h-0.5 bg-amber-700 rounded transition-all duration-300 ${
-                  menuOpen ? 'opacity-0 scale-x-0' : ''
-                }`}
+                className={`block w-6 h-0.5 bg-amber-700 rounded transition-all duration-300 ${menuOpen ? 'opacity-0 scale-x-0' : ''
+                  }`}
               />
               <span
-                className={`block w-6 h-0.5 bg-amber-700 rounded transition-all duration-300 ${
-                  menuOpen ? '-rotate-45 -translate-y-2' : ''
-                }`}
+                className={`block w-6 h-0.5 bg-amber-700 rounded transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''
+                  }`}
               />
             </button>
           </div>
@@ -109,23 +100,20 @@ const Layout = () => {
 
         {/* Mobile drawer */}
         <div
-          className={`md:hidden fixed inset-0 top-16 z-40 transition-all duration-300 ${
-            menuOpen ? 'pointer-events-auto' : 'pointer-events-none'
-          }`}
+          className={`md:hidden fixed inset-0 top-16 z-40 transition-all duration-300 ${menuOpen ? 'pointer-events-auto' : 'pointer-events-none'
+            }`}
         >
           {/* Backdrop */}
           <div
-            className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
-              menuOpen ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${menuOpen ? 'opacity-100' : 'opacity-0'
+              }`}
             onClick={handleNavClick}
           />
 
           {/* Menu panel */}
           <div
-            className={`absolute top-0 right-0 h-full w-64 bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out ${
-              menuOpen ? 'translate-x-0' : 'translate-x-full'
-            }`}
+            className={`absolute top-0 right-0 h-full w-64 bg-white shadow-xl flex flex-col transition-transform duration-300 ease-in-out ${menuOpen ? 'translate-x-0' : 'translate-x-full'
+              }`}
           >
             <div className="px-6 py-8 flex flex-col gap-1">
               <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 mb-4">

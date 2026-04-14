@@ -19,6 +19,7 @@ const Roompage = lazy(() => import('./pages/RoomPage'));
 const RentPaymentPage = lazy(() => import('./pages/RentPaymentPage'));
 const StudentTable = lazy(() => import('./components/StudentTable'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const TenantPage = lazy(() => import('./pages/Tenant'));
 
 
 const App = () => {
@@ -48,6 +49,9 @@ const App = () => {
                 <Route path="/expenses" element={<ExpensesPage />} />
                 <Route path="/rooms" element={<Roompage />} />
                 <Route path="/rent" element={<RentPaymentPage />} />
+                {(user?.role === 'SUPER_ADMIN') && (
+                  <Route path="/tenant" element={<TenantPage />} />
+                )}
                 {(user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN') && (
                   <Route path="/user" element={<UserManagement />} />
                 )}

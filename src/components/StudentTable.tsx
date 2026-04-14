@@ -2,7 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
     Search, Plus, X, Upload, Eye, Download, FileText,
     Trash2, ChevronDown, Users, CheckCircle,
-    Clock, XCircle, Building2, Bed, IndianRupee, Pencil
+    Clock, XCircle, Building2, Bed, IndianRupee, Pencil,
+    CreditCard, Camera, IdCard, SlidersHorizontal
 } from 'lucide-react';
 import { createStudentsAPI, getStudentsAPI, updateStudentsAPI, getRoomsAPI } from '../service';
 
@@ -28,7 +29,6 @@ export interface Student {
     idProofDocument?: string;
 }
 
-// Room interface matching API response
 interface Room {
     id: number;
     roomNo: string;
@@ -48,7 +48,7 @@ interface DocumentPreview {
 
 type ModalMode = 'add' | 'edit';
 
-// ─── helpers ────────────────────────────────────────────────────────────────
+// ─── helpers ─────────────────────────────────────────────────────────────────
 
 const isPdfDataUrl = (url: string) =>
     url.startsWith('data:application/pdf') || url.includes('application/pdf');
@@ -61,23 +61,16 @@ const safeFilename = (label: string, url: string) => {
     return `${label.replace(/\s+/g, '_')}.${ext}`;
 };
 
-// Convert API sharingType to display format
 const formatSharingType = (apiType: string): 'Single' | 'Double' | 'Triple' | 'Four Sharing' => {
     const map: Record<string, 'Single' | 'Double' | 'Triple' | 'Four Sharing'> = {
-        SINGLE: 'Single',
-        DOUBLE: 'Double',
-        TRIPLE: 'Triple',
-        FOUR_SHARING: 'Four Sharing',
+        SINGLE: 'Single', DOUBLE: 'Double', TRIPLE: 'Triple', FOUR_SHARING: 'Four Sharing',
     };
     return map[apiType] ?? 'Double';
 };
 
-// Convert API roomType to display format
-const formatRoomType = (apiType: string): 'AC' | 'Non-AC' => {
-    return apiType === 'AC' ? 'AC' : 'Non-AC';
-};
+const formatRoomType = (apiType: string): 'AC' | 'Non-AC' =>
+    apiType === 'AC' ? 'AC' : 'Non-AC';
 
-// Generate bed options based on bedNumbers
 const generateBedOptions = (bedNumbers: number): string[] => {
     const labels = ['A', 'B', 'C', 'D'];
     return Array.from({ length: bedNumbers }, (_, i) => `Bed ${labels[i] ?? i + 1}`);
@@ -93,12 +86,26 @@ const EMPTY_FORM = {
 };
 
 const STATUS_CONFIG = {
-    Active: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500', border: 'border-emerald-200' },
-    Pending: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500', border: 'border-amber-200' },
-    Inactive: { bg: 'bg-rose-50', text: 'text-rose-700', dot: 'bg-rose-500', border: 'border-rose-200' },
+    Active: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-400', border: 'border-emerald-100', glow: 'shadow-emerald-100' },
+    Pending: { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-400', border: 'border-amber-100', glow: 'shadow-amber-100' },
+    Inactive: { bg: 'bg-rose-50', text: 'text-rose-700', dot: 'bg-rose-400', border: 'border-rose-100', glow: 'shadow-rose-100' },
 };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+// ─── Avatar Gradient ──────────────────────────────────────────────────────────
+const getAvatarGradient = (name: string) => {
+    const gradients = [
+        'from-violet-500 to-purple-600',
+        'from-blue-500 to-indigo-600',
+        'from-teal-500 to-emerald-600',
+        'from-orange-500 to-rose-600',
+        'from-pink-500 to-violet-600',
+        'from-sky-500 to-blue-600',
+    ];
+    const idx = (name?.charCodeAt(0) ?? 0) % gradients.length;
+    return gradients[idx];
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function StudentTable() {
     const [students, setStudents] = useState<Student[]>([]);
@@ -118,7 +125,6 @@ export default function StudentTable() {
     const [documentPreviews, setDocumentPreviews] = useState<{ aadhaar: string | null; photo: string | null; idProof: string | null }>({ aadhaar: null, photo: null, idProof: null });
     const [existingDocs, setExistingDocs] = useState<{ aadhaar: string | null; photo: string | null; idProof: string | null }>({ aadhaar: null, photo: null, idProof: null });
 
-    // Derived: selected room object based on formData.roomNo
     const selectedRoom = rooms.find(r => r.roomNo === formData.roomNo) ?? null;
     const bedOptions = selectedRoom ? generateBedOptions(selectedRoom.bedNumbers) : [];
 
@@ -127,104 +133,63 @@ export default function StudentTable() {
         'July', 'August', 'September', 'October', 'November', 'December'];
 
     const fetchStudents = async () => {
-        try {
-            const response = await getStudentsAPI();
-            setStudents(response.data);
-        } catch (err) {
-            console.error('Error fetching students:', err);
-        }
+        try { const r = await getStudentsAPI(); setStudents(r.data); }
+        catch (err) { console.error('Error fetching students:', err); }
     };
-
     const fetchRooms = async () => {
-        try {
-            const response = await getRoomsAPI();
-            setRooms(response.data);
-        } catch (err) {
-            console.error('Error fetching rooms:', err);
-        }
+        try { const r = await getRoomsAPI(); setRooms(r.data); }
+        catch (err) { console.error('Error fetching rooms:', err); }
     };
 
-    useEffect(() => {
-        fetchStudents();
-        fetchRooms();
-    }, []);
+    useEffect(() => { fetchStudents(); fetchRooms(); }, []);
 
-    // ── Handle Room Selection ────────────────────────────────────────────────
     const handleRoomChange = (roomNo: string) => {
         const room = rooms.find(r => r.roomNo === roomNo);
         if (room) {
             setFormData(prev => ({
-                ...prev,
-                roomNo: room.roomNo,
-                bedNo: '', // Reset bed selection when room changes
+                ...prev, roomNo: room.roomNo, bedNo: '',
                 sharingType: formatSharingType(room.sharingType),
                 roomType: formatRoomType(room.roomType),
                 monthlyFee: String(room.pricePerMonth),
             }));
         } else {
-            setFormData(prev => ({
-                ...prev,
-                roomNo: '',
-                bedNo: '',
-                sharingType: 'Double',
-                roomType: 'Non-AC',
-                monthlyFee: '',
-            }));
+            setFormData(prev => ({ ...prev, roomNo: '', bedNo: '', sharingType: 'Double', roomType: 'Non-AC', monthlyFee: '' }));
         }
     };
 
-    // ── Open Add modal ───────────────────────────────────────────────────────
     const openAddModal = () => {
-        setModalMode('add');
-        setEditingId(null);
+        setModalMode('add'); setEditingId(null);
         setFormData({ ...EMPTY_FORM });
         setDocuments({ aadhaar: null, photo: null, idProof: null });
         setDocumentPreviews({ aadhaar: null, photo: null, idProof: null });
         setExistingDocs({ aadhaar: null, photo: null, idProof: null });
-        setError(null);
-        setIsModalOpen(true);
+        setError(null); setIsModalOpen(true);
     };
 
-    // ── Open Edit modal ──────────────────────────────────────────────────────
     const openEditModal = (student: Student) => {
-        setModalMode('edit');
-        setEditingId(student.id);
+        setModalMode('edit'); setEditingId(student.id);
         setFormData({
-            name: student.name ?? '',
-            joinDate: student.joinDate ? student.joinDate.split('T')[0] : '',
-            bedNo: student.bedNo ?? '',
-            roomNo: student.roomNo ?? '',
-            sharingType: student.sharingType ?? 'Double',
-            roomType: student.roomType ?? 'Non-AC',
-            monthlyFee: String(student.monthlyFee ?? ''),
-            advanceAmount: String(student.advanceAmount ?? ''),
-            status: student.status ?? 'Active',
-            guardianName: student.guardianName ?? '',
-            guardianPhone: student.guardianPhone ?? '',
-            address: student.address ?? '',
-            phoneNumber: student.phoneNumber ?? '',
-            email: student.email ?? '',
+            name: student.name ?? '', joinDate: student.joinDate ? student.joinDate.split('T')[0] : '',
+            bedNo: student.bedNo ?? '', roomNo: student.roomNo ?? '',
+            sharingType: student.sharingType ?? 'Double', roomType: student.roomType ?? 'Non-AC',
+            monthlyFee: String(student.monthlyFee ?? ''), advanceAmount: String(student.advanceAmount ?? ''),
+            status: student.status ?? 'Active', guardianName: student.guardianName ?? '',
+            guardianPhone: student.guardianPhone ?? '', address: student.address ?? '',
+            phoneNumber: student.phoneNumber ?? '', email: student.email ?? '',
         });
-        setExistingDocs({
-            aadhaar: student.aadhaarDocument ?? null,
-            photo: student.photoDocument ?? null,
-            idProof: student.idProofDocument ?? null,
-        });
+        setExistingDocs({ aadhaar: student.aadhaarDocument ?? null, photo: student.photoDocument ?? null, idProof: student.idProofDocument ?? null });
         setDocuments({ aadhaar: null, photo: null, idProof: null });
         setDocumentPreviews({ aadhaar: null, photo: null, idProof: null });
-        setError(null);
-        setIsModalOpen(true);
+        setError(null); setIsModalOpen(true);
     };
 
     const closeModal = () => { setIsModalOpen(false); setError(null); };
 
-    // ── File handling ────────────────────────────────────────────────────────
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'aadhaar' | 'photo' | 'idProof') => {
         const file = e.target.files?.[0];
         if (!file) return;
         if (file.size > 5 * 1024 * 1024) { setError('File size should not exceed 5 MB'); return; }
-        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
-        if (!validTypes.includes(file.type)) { setError('Only JPG, PNG, and PDF files are allowed'); return; }
+        if (!['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'].includes(file.type)) { setError('Only JPG, PNG, and PDF files are allowed'); return; }
         setDocuments(prev => ({ ...prev, [type]: file }));
         setExistingDocs(prev => ({ ...prev, [type]: null }));
         const reader = new FileReader();
@@ -238,40 +203,59 @@ export default function StudentTable() {
         setDocumentPreviews(prev => ({ ...prev, [type]: null }));
     };
 
-    const handleRemoveExistingDocument = (type: 'aadhaar' | 'photo' | 'idProof') => {
+    const handleRemoveExistingDocument = (type: 'aadhaar' | 'photo' | 'idProof') =>
         setExistingDocs(prev => ({ ...prev, [type]: null }));
-    };
 
-    const handlePreviewDocument = (type: 'aadhaar' | 'photo' | 'idProof', url: string, name: string) => {
+    const handlePreviewDocument = (type: 'aadhaar' | 'photo' | 'idProof', url: string, name: string) =>
         setPreviewDocument({ type, url, name, isPdf: isPdfUrl(url) });
-    };
 
     const handleDownloadDocument = useCallback((url: string, label: string) => {
         const filename = safeFilename(label, url);
         const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        link.href = url; link.download = filename; link.target = '_blank'; link.rel = 'noopener noreferrer';
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }, []);
 
-    // ── Submit ───────────────────────────────────────────────────────────────
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            setIsLoading(true);
-            setError(null);
+            if (!formData.name || !formData.joinDate || !formData.roomNo || !formData.bedNo || !formData.guardianName || !formData.guardianPhone || !formData.address || !formData.phoneNumber || !formData.email) {
+                setError('Please fill in all required fields.'); return;
+            };
+            if (formData.phoneNumber && !/^\d{10}$/.test(formData.phoneNumber)) {
+                setError('Phone number must be 10 digits.'); return;
+            }
+            if (formData.guardianPhone && !/^\d{10}$/.test(formData.guardianPhone)) {
+                setError('Guardian phone number must be 10 digits.'); return;
+            }
+            if (!documents.aadhaar) {
+                if (modalMode === 'add') {
+                    setError('Aadhaar card is required for new students.'); return;
+                } else if (modalMode === 'edit' && !existingDocs.aadhaar) {
+                    setError('Aadhaar card is required. Please upload or keep the existing document.'); return;
+                }
+            }
+            if (!documents.idProof) {
+                if (modalMode === 'add') {
+                    setError('ID proof is required for new students.'); return;
+                } else if (modalMode === 'edit' && !existingDocs.idProof) {
+                    setError('ID proof is required. Please upload or keep the existing document.'); return;
+                }
+            }
+            if (!documents.photo) {
+                if (modalMode === 'add') {
+                    setError('Photo is required for new students.'); return;
+                } else if (modalMode === 'edit' && !existingDocs.photo) {
+                    setError('Photo is required. Please upload or keep the existing document.'); return;
+                }
+            }
+
+            setIsLoading(true); setError(null);
             const submitData = new FormData();
             Object.entries(formData).forEach(([key, value]) => {
-                // Strip currency symbol and commas before sending numeric fields
                 if (key === 'monthlyFee' || key === 'advanceAmount') {
                     submitData.append(key, String(value).replace(/[₹,\s]/g, ''));
-                } else {
-                    submitData.append(key, value);
-                }
+                } else { submitData.append(key, value); }
             });
             if (documents.aadhaar) submitData.append('aadhaar', documents.aadhaar);
             if (documents.photo) submitData.append('photo', documents.photo);
@@ -281,20 +265,14 @@ export default function StudentTable() {
                 if (!existingDocs.photo && !documents.photo) submitData.append('removePhoto', 'true');
                 if (!existingDocs.idProof && !documents.idProof) submitData.append('removeIdProof', 'true');
                 await updateStudentsAPI(editingId!, submitData);
-            } else {
-                await createStudentsAPI(submitData);
-            }
-            closeModal();
-            fetchStudents();
+            } else { await createStudentsAPI(submitData); }
+            closeModal(); fetchStudents();
         } catch (err: any) {
-            console.error("Error submitting student data:", err);
+            console.error('Error submitting student data:', err);
             setError(err || `Failed to ${modalMode === 'edit' ? 'update' : 'create'} student.`);
-        } finally {
-            setIsLoading(false);
-        }
+        } finally { setIsLoading(false); }
     };
 
-    // ── Filter ───────────────────────────────────────────────────────────────
     const filteredStudents = students.filter(student => {
         const search = searchTerm.toLowerCase();
         const matchesSearch =
@@ -315,59 +293,82 @@ export default function StudentTable() {
         pending: students.filter(s => s.status === 'Pending').length,
     };
 
-    const inputCls = "w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 focus:bg-white transition-all";
-    const readOnlyCls = "w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed select-none";
+    const inputCls = "w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 transition-all shadow-sm hover:border-slate-300";
+    const readOnlyCls = "w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-400 cursor-not-allowed select-none";
 
-    // ── Render ───────────────────────────────────────────────────────────────
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-violet-50/30 to-indigo-50/40">
-            <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <div className="min-h-screen bg-[#f6f7fb]">
+            {/* ── Subtle top accent bar ── */}
+            <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-purple-500" />
 
-                {/* Page Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Student Records</h1>
-                        <p className="text-sm text-slate-500 mt-0.5">Manage hostel residents and their documents</p>
+            <div className="max-w mx-auto p-3 sm:p-4 md:p-6 lg:p-8 space-y-5 sm:space-y-6">
+
+                {/* ── Page Header ── */}
+                <div className="flex items-center justify-between gap-3 pt-1 flex-wrap">
+                    <div className="min-w-0">
+                        <h1 className="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight truncate">
+                            Student Records
+                        </h1>
+                        <p className="text-xs sm:text-sm text-slate-400 mt-0.5 font-medium truncate">
+                            Manage hostel residents and documents
+                        </p>
                     </div>
-                    <button onClick={openAddModal} className="inline-flex items-center gap-2 px-5 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-semibold shadow-md shadow-violet-200 hover:bg-violet-700 active:scale-95 transition-all">
-                        <Plus size={16} />Add Student
+
+                    <button
+                        onClick={openAddModal}
+                        className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-violet-600 text-white rounded-xl text-sm font-semibold shadow-lg shadow-violet-200 hover:bg-violet-700 active:scale-95 transition-all whitespace-nowrap"
+                    >
+                        <Plus size={15} strokeWidth={2.5} />
+                        <span className="xs:inline">Add Student</span>
                     </button>
                 </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4">
+                {/* ── Stats ── */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-4">
                     {[
-                        { label: 'Total Students', value: stats.total, icon: Users, color: 'text-violet-600', bg: 'bg-violet-50' },
-                        { label: 'Active', value: stats.active, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                        { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-50' },
-                    ].map(({ label, value, icon: Icon, color, bg }) => (
-                        <div key={label} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex items-center gap-3">
-                            <div className={`${bg} rounded-xl p-2.5`}><Icon size={18} className={color} /></div>
-                            <div>
-                                <p className="text-2xl font-bold text-slate-800 leading-none">{value}</p>
-                                <p className="text-xs text-slate-500 mt-0.5">{label}</p>
+                        { label: 'Total Students', value: stats.total, icon: Users, color: 'text-violet-600', bg: 'bg-violet-100', ring: 'ring-violet-200' },
+                        { label: 'Active', value: stats.active, icon: CheckCircle, color: 'text-emerald-600', bg: 'bg-emerald-100', ring: 'ring-emerald-200' },
+                        { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100', ring: 'ring-amber-200' },
+                    ].map(({ label, value, icon: Icon, color, bg, ring }) => (
+                        <div key={label} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-3 sm:p-5 flex items-center gap-2.5 sm:gap-4 min-w-0 hover:shadow-md transition-shadow">
+                            <div className={`${bg} ring-4 ${ring} rounded-xl sm:rounded-2xl p-2 sm:p-2.5 shrink-0`}>
+                                <Icon size={15} className={color} strokeWidth={2} />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-xl sm:text-3xl font-bold text-slate-800 leading-none tracking-tight">{value}</p>
+                                <p className="text-[10px] sm:text-xs text-slate-400 mt-1 font-semibold uppercase tracking-wide truncate">{label}</p>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                {/* Table Card */}
+                {/* ── Table Card ── */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+
                     {/* Toolbar */}
-                    <div className="p-4 sm:p-5 border-b border-slate-100 flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-1 max-w-xs">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
-                            <input type="text" placeholder="Search by name, room, bed…" value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-all" />
-                        </div>
-                        <div className="flex gap-2 ml-auto">
-                            <SelectFilter value={String(selectedYear)} onChange={v => setSelectedYear(Number(v))}>
-                                {years.map(y => <option key={y} value={y}>{y}</option>)}
-                            </SelectFilter>
-                            <SelectFilter value={selectedMonth} onChange={setSelectedMonth}>
-                                <option value="">All Months</option>
-                                {months.map(m => <option key={m} value={m}>{m}</option>)}
-                            </SelectFilter>
+                    <div className="p-3 sm:p-5 border-b border-slate-100 flex flex-col gap-3 bg-white">
+                        <div className="flex flex-col sm:flex-row gap-2.5">
+                            {/* Search */}
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} strokeWidth={2.5} />
+                                <input
+                                    type="text"
+                                    placeholder="Search by name, room, bed…"
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 focus:bg-white transition-all"
+                                />
+                            </div>
+                            {/* Filters */}
+                            <div className="flex gap-2 items-center">
+                                <SlidersHorizontal size={14} className="text-slate-400 shrink-0" />
+                                <SelectFilter value={String(selectedYear)} onChange={v => setSelectedYear(Number(v))}>
+                                    {years.map(y => <option key={y} value={y}>{y}</option>)}
+                                </SelectFilter>
+                                <SelectFilter value={selectedMonth} onChange={setSelectedMonth}>
+                                    <option value="">All Months</option>
+                                    {months.map(m => <option key={m} value={m}>{m}</option>)}
+                                </SelectFilter>
+                            </div>
                         </div>
                     </div>
 
@@ -375,74 +376,97 @@ export default function StudentTable() {
                     <div className="hidden md:block overflow-x-auto">
                         <table className="w-full">
                             <thead>
-                                <tr className="bg-slate-50/80">
-                                    {['Student', 'Join Date', 'Room / Bed', 'Sharing', 'Room Type', 'Monthly Fee', 'Status', 'Documents', 'Actions'].map(h => (
-                                        <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
+                                <tr className="bg-slate-50 border-b border-slate-100">
+                                    {['Student', 'Join Date', 'Room / Bed', 'Sharing', 'Room Type', 'Monthly Fee', 'Advance', 'Status', 'Docs', 'Actions'].map(h => (
+                                        <th key={h} className="px-4 py-3 text-left text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">{h}</th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-50">
                                 {filteredStudents.length === 0 ? (
                                     <tr>
-                                        <td colSpan={9} className="px-6 py-16 text-center">
-                                            <div className="flex flex-col items-center gap-2 text-slate-400">
-                                                <Users size={32} className="opacity-40" />
-                                                <p className="text-sm font-medium">No students found</p>
-                                                <p className="text-xs">Try adjusting your search or filters</p>
+                                        <td colSpan={10} className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center gap-3 text-slate-300">
+                                                <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                                    <Users size={24} className="text-slate-300" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-slate-500">No students found</p>
+                                                    <p className="text-xs text-slate-400 mt-0.5">Try adjusting your search or filters</p>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : filteredStudents.map(student => {
                                     const sc = STATUS_CONFIG[student.status] ?? STATUS_CONFIG.Inactive;
+                                    const grad = getAvatarGradient(student.name);
                                     return (
-                                        <tr key={student.id} className="hover:bg-violet-50/20 transition-colors">
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
+                                        <tr key={student.id} className="hover:bg-violet-50/30 transition-colors group">
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                                                    <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm`}>
                                                         {student.name?.charAt(0)?.toUpperCase()}
                                                     </div>
                                                     <div>
-                                                        <p className="font-semibold text-slate-800 text-sm">{student.name}</p>
-                                                        <p className="text-xs text-slate-400">{student.email}</p>
+                                                        <p className="font-semibold text-slate-800 text-sm leading-snug">{student.name}</p>
+                                                        <p className="text-xs text-slate-400 font-medium">{student.email}</p>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap text-sm text-slate-600">
+                                            <td className="px-4 py-3.5 whitespace-nowrap text-sm text-slate-500 font-medium">
                                                 {new Date(student.joinDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
-                                                <div className="flex items-center gap-1.5"><Building2 size={13} className="text-slate-400" /><span className="text-sm font-medium text-slate-700">{student.roomNo}</span></div>
-                                                <div className="flex items-center gap-1.5 mt-0.5"><Bed size={13} className="text-slate-400" /><span className="text-xs text-slate-500">{student.bedNo}</span></div>
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Building2 size={12} className="text-slate-400" />
+                                                    <span className="text-sm font-bold text-slate-700">{student.roomNo}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    <Bed size={12} className="text-slate-300" />
+                                                    <span className="text-xs text-slate-400 font-medium">{student.bedNo}</span>
+                                                </div>
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
-                                                <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">{student.sharingType}</span>
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
+                                                <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-lg">{student.sharingType}</span>
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
-                                                <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg ${student.roomType === 'AC' ? 'bg-sky-50 text-sky-700' : 'bg-slate-100 text-slate-600'}`}>{student.roomType}</span>
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
+                                                <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${student.roomType === 'AC' ? 'bg-sky-50 text-sky-600 ring-1 ring-sky-100' : 'bg-slate-100 text-slate-500'}`}>{student.roomType}</span>
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
-                                                <div className="flex items-center gap-1"><IndianRupee size={13} className="text-slate-500" /><span className="font-bold text-slate-800 text-sm">{student.monthlyFee}</span></div>
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
+                                                <div className="flex items-center gap-0.5">
+                                                    <IndianRupee size={13} className="text-slate-400" strokeWidth={2} />
+                                                    <span className="font-bold text-slate-800 text-sm">{student.monthlyFee}</span>
+                                                </div>
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg border ${sc.bg} ${sc.text} ${sc.border}`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />{student.status}
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
+                                                <div className="flex items-center gap-0.5">
+                                                    <IndianRupee size={13} className="text-slate-400" strokeWidth={2} />
+                                                    <span className="font-bold text-slate-800 text-sm">{student.advanceAmount}</span>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-xl border shadow-sm ${sc.bg} ${sc.text} ${sc.border} ${sc.glow}`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${sc.dot} animate-pulse`} />{student.status}
                                                 </span>
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
                                                 {(student.aadhaarDocument || student.photoDocument || student.idProofDocument) ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        {student.aadhaarDocument && <DocButton label="Aadhaar" color="blue" onClick={() => handlePreviewDocument('aadhaar', student.aadhaarDocument!, 'Aadhaar')} />}
-                                                        {student.photoDocument && <DocButton label="Photo" color="green" onClick={() => handlePreviewDocument('photo', student.photoDocument!, 'Photo')} />}
-                                                        {student.idProofDocument && <DocButton label="ID" color="purple" onClick={() => handlePreviewDocument('idProof', student.idProofDocument!, 'ID Proof')} />}
+                                                    <div className="flex items-center gap-1">
+                                                        {student.aadhaarDocument && (
+                                                            <DocIconButton icon={CreditCard} color="blue" tooltip="Aadhaar" onClick={() => handlePreviewDocument('aadhaar', student.aadhaarDocument!, 'Aadhaar')} />
+                                                        )}
+                                                        {student.photoDocument && (
+                                                            <DocIconButton icon={Camera} color="green" tooltip="Photo" onClick={() => handlePreviewDocument('photo', student.photoDocument!, 'Photo')} />
+                                                        )}
+                                                        {student.idProofDocument && (
+                                                            <DocIconButton icon={IdCard} color="purple" tooltip="ID Proof" onClick={() => handlePreviewDocument('idProof', student.idProofDocument!, 'ID Proof')} />
+                                                        )}
                                                     </div>
-                                                ) : <span className="text-xs text-slate-400 italic">No documents</span>}
+                                                ) : <span className="text-slate-300 text-sm">—</span>}
                                             </td>
-                                            <td className="px-5 py-3.5 whitespace-nowrap">
-                                                <button
-                                                    onClick={() => openEditModal(student)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-colors"
-                                                >
-                                                    <Pencil size={12} />Edit
+                                            <td className="px-4 py-3.5 whitespace-nowrap">
+                                                <button onClick={() => openEditModal(student)} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-100 hover:border-violet-200 rounded-xl transition-all shadow-sm hover:shadow active:scale-95">
+                                                    <Pencil size={12} strokeWidth={2.5} />Edit
                                                 </button>
                                             </td>
                                         </tr>
@@ -455,42 +479,63 @@ export default function StudentTable() {
                     {/* Mobile Cards */}
                     <div className="md:hidden divide-y divide-slate-100">
                         {filteredStudents.length === 0 ? (
-                            <div className="py-16 text-center"><div className="flex flex-col items-center gap-2 text-slate-400"><Users size={32} className="opacity-40" /><p className="text-sm font-medium">No students found</p></div></div>
+                            <div className="py-20 text-center">
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                                        <Users size={24} className="text-slate-300" />
+                                    </div>
+                                    <p className="text-sm font-semibold text-slate-500">No students found</p>
+                                </div>
+                            </div>
                         ) : filteredStudents.map(student => {
                             const sc = STATUS_CONFIG[student.status] ?? STATUS_CONFIG.Inactive;
+                            const grad = getAvatarGradient(student.name);
                             return (
                                 <div key={student.id} className="p-4 hover:bg-slate-50/80 transition-colors">
-                                    <div className="flex items-start justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold">
+                                    {/* Top row */}
+                                    <div className="flex items-start justify-between mb-3 gap-2">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${grad} flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-sm`}>
                                                 {student.name?.charAt(0)?.toUpperCase()}
                                             </div>
-                                            <div>
-                                                <p className="font-semibold text-slate-800 text-sm">{student.name}</p>
-                                                <p className="text-xs text-slate-500 mt-0.5">{student.roomNo} · {student.bedNo}</p>
+                                            <div className="min-w-0">
+                                                <p className="font-bold text-slate-800 text-sm truncate">{student.name}</p>
+                                                <p className="text-xs text-slate-400 font-medium mt-0.5 truncate">{student.roomNo} · {student.bedNo}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2 shrink-0 ml-2">
-                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg border ${sc.bg} ${sc.text} ${sc.border}`}>
+                                        <div className="flex items-center gap-1.5 shrink-0">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-xl border ${sc.bg} ${sc.text} ${sc.border}`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${sc.dot}`} />{student.status}
                                             </span>
-                                            <button onClick={() => openEditModal(student)} className="p-2 text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg border border-amber-200 transition-colors" title="Edit student">
-                                                <Pencil size={14} />
+                                            <button onClick={() => openEditModal(student)} className="p-1.5 text-violet-600 bg-violet-50 hover:bg-violet-100 rounded-xl border border-violet-100 transition-colors active:scale-95">
+                                                <Pencil size={13} strokeWidth={2.5} />
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2.5 text-xs mb-3">
+
+                                    {/* Info grid */}
+                                    <div className="grid grid-cols-2 gap-2 text-xs mb-3">
                                         <InfoBox label="Join Date" value={new Date(student.joinDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} />
                                         <InfoBox label="Monthly Fee" value={`₹${student.monthlyFee}`} bold />
                                         <InfoBox label="Sharing" value={student.sharingType} />
                                         <InfoBox label="Room Type" value={student.roomType} accent={student.roomType === 'AC'} />
                                     </div>
+
+                                    {/* Docs row - icon only */}
                                     {(student.aadhaarDocument || student.photoDocument || student.idProofDocument) && (
-                                        <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
-                                            <span className="text-xs text-slate-500 font-medium">Docs:</span>
-                                            {student.aadhaarDocument && <DocButton label="Aadhaar" color="blue" small onClick={() => handlePreviewDocument('aadhaar', student.aadhaarDocument!, 'Aadhaar')} />}
-                                            {student.photoDocument && <DocButton label="Photo" color="green" small onClick={() => handlePreviewDocument('photo', student.photoDocument!, 'Photo')} />}
-                                            {student.idProofDocument && <DocButton label="ID" color="purple" small onClick={() => handlePreviewDocument('idProof', student.idProofDocument!, 'ID Proof')} />}
+                                        <div className="flex items-center gap-2 pt-2.5 border-t border-slate-100">
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Docs</span>
+                                            <div className="flex gap-1">
+                                                {student.aadhaarDocument && (
+                                                    <DocIconButton icon={CreditCard} color="blue" tooltip="Aadhaar" onClick={() => handlePreviewDocument('aadhaar', student.aadhaarDocument!, 'Aadhaar')} />
+                                                )}
+                                                {student.photoDocument && (
+                                                    <DocIconButton icon={Camera} color="green" tooltip="Photo" onClick={() => handlePreviewDocument('photo', student.photoDocument!, 'Photo')} />
+                                                )}
+                                                {student.idProofDocument && (
+                                                    <DocIconButton icon={IdCard} color="purple" tooltip="ID Proof" onClick={() => handlePreviewDocument('idProof', student.idProofDocument!, 'ID Proof')} />
+                                                )}
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -498,9 +543,16 @@ export default function StudentTable() {
                         })}
                     </div>
 
-                    {/* Table Footer */}
-                    <div className="px-5 py-3 border-t border-slate-100 bg-slate-50/50">
-                        <p className="text-xs text-slate-500">Showing <span className="font-semibold text-slate-700">{filteredStudents.length}</span> of <span className="font-semibold text-slate-700">{students.length}</span> students</p>
+                    {/* Footer */}
+                    <div className="px-4 py-3.5 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <p className="text-xs text-slate-400 font-medium">
+                            Showing <span className="font-bold text-slate-600">{filteredStudents.length}</span> of <span className="font-bold text-slate-600">{students.length}</span> students
+                        </p>
+                        {filteredStudents.length > 0 && (
+                            <p className="text-xs text-slate-400 font-medium">
+                                <span className="font-bold text-emerald-600">{stats.active}</span> active
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>
@@ -509,52 +561,88 @@ export default function StudentTable() {
             {/*  Add / Edit Modal                                                 */}
             {/* ══════════════════════════════════════════════════════════════════ */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[92vh] flex flex-col">
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+                    <div className="bg-white w-full sm:rounded-2xl sm:max-w-2xl sm:max-h-[92vh] max-h-[96vh] flex flex-col rounded-t-2xl shadow-2xl">
 
                         {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-xl ${modalMode === 'edit' ? 'bg-amber-50' : 'bg-violet-50'}`}>
-                                    {modalMode === 'edit' ? <Pencil size={18} className="text-amber-600" /> : <Plus size={18} className="text-violet-600" />}
+                        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 shrink-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className={`p-2 rounded-xl shrink-0 ${modalMode === 'edit' ? 'bg-violet-50 ring-2 ring-violet-100' : 'bg-violet-600'}`}>
+                                    {modalMode === 'edit'
+                                        ? <Pencil size={16} className="text-violet-600" strokeWidth={2.5} />
+                                        : <Plus size={16} className="text-white" strokeWidth={2.5} />
+                                    }
                                 </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900">{modalMode === 'edit' ? 'Edit Student' : 'Add New Student'}</h3>
-                                    <p className="text-xs text-slate-500 mt-0.5">
+                                <div className="min-w-0">
+                                    <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">
+                                        {modalMode === 'edit' ? 'Edit Student' : 'Add New Student'}
+                                    </h3>
+                                    <p className="text-xs text-slate-400 font-medium mt-0.5 hidden xs:block">
                                         {modalMode === 'edit' ? `Updating details for ${formData.name}` : 'Fill in the details to register a new resident'}
                                     </p>
                                 </div>
                             </div>
-                            <button onClick={closeModal} className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600"><X size={18} /></button>
+                            <button onClick={closeModal} className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600 shrink-0">
+                                <X size={18} strokeWidth={2.5} />
+                            </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
-                            <div className="p-6 space-y-6">
+                            <div className="p-4 sm:p-6 space-y-6">
 
                                 {/* Basic Information */}
                                 <Section title="Basic Information">
                                     <Field label="Student Name" required>
                                         <input type="text" required value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className={inputCls} placeholder="Enter student name" />
                                     </Field>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <Field label="Join Date" required>
-                                            <input type="date" required value={formData.joinDate} max={new Date().toISOString().split("T")[0]} onChange={e => setFormData({ ...formData, joinDate: e.target.value })} className={inputCls} />
+                                            <input type="date" required value={formData.joinDate} max={new Date().toISOString().split('T')[0]} onChange={e => setFormData({ ...formData, joinDate: e.target.value })} className={inputCls} />
                                         </Field>
                                         <Field label="Email" required>
                                             <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className={inputCls} placeholder="student@email.com" />
                                         </Field>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <Field label="Phone Number" required>
-                                            <input type="tel" required value={formData.phoneNumber} onChange={e => setFormData({ ...formData, phoneNumber: e.target.value })} className={inputCls} placeholder="+91 00000 00000" />
-                                        </Field>
+                                            <input
+                                                type="tel"
+                                                required
+                                                value={formData.phoneNumber}
+                                                onChange={e => {
+                                                    let value = e.target.value;
+
+                                                    // Allow only digits + limit to 10
+                                                    value = value.replace(/\D/g, '').slice(0, 10);
+
+                                                    setFormData({ ...formData, phoneNumber: value });
+                                                }}
+                                                className={inputCls}
+                                                placeholder="9876543210"
+                                                maxLength={10}
+                                            />                                        </Field>
                                         <Field label="Guardian Name" required>
                                             <input type="text" required value={formData.guardianName} onChange={e => setFormData({ ...formData, guardianName: e.target.value })} className={inputCls} placeholder="Guardian name" />
                                         </Field>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <Field label="Guardian Phone" required>
-                                            <input type="tel" required value={formData.guardianPhone} onChange={e => setFormData({ ...formData, guardianPhone: e.target.value })} className={inputCls} placeholder="+91 00000 00000" />
+                                            <input
+                                                type="tel"
+                                                required
+                                                value={formData.guardianPhone}
+                                                onChange={e => {
+                                                    let value = e.target.value;
+
+                                                    // Allow only digits + limit to 10
+                                                    value = value.replace(/\D/g, '').slice(0, 10);
+
+                                                    setFormData({ ...formData, guardianPhone: value });
+                                                }}
+                                                className={inputCls}
+                                                placeholder="9876543210"
+                                                maxLength={10}
+                                            />
                                         </Field>
                                         <Field label="Address" required>
                                             <input type="text" required value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} className={inputCls} placeholder="Full address" />
@@ -564,109 +652,60 @@ export default function StudentTable() {
 
                                 {/* Room Details */}
                                 <Section title="Room Details">
-                                    {/* Row 1: Room No + Bed No */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {/* ── Room No Dropdown ── */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <Field label="Room No" required>
                                             <div className="relative">
-                                                <select
-                                                    required
-                                                    value={formData.roomNo}
-                                                    onChange={e => handleRoomChange(e.target.value)}
-                                                    className="w-full appearance-none px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 focus:bg-white transition-all cursor-pointer pr-9"
-                                                >
+                                                <select required value={formData.roomNo} onChange={e => handleRoomChange(e.target.value)}
+                                                    className="w-full appearance-none px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 transition-all cursor-pointer pr-9 shadow-sm hover:border-slate-300">
                                                     <option value="">Select room</option>
                                                     {rooms.map(room => (
-                                                        <option key={room.id} value={room.roomNo}>
-                                                            Room {room.roomNo} {room.isAvailable ? '' : '(Full)'}
-                                                        </option>
+                                                        <option key={room.id} value={room.roomNo}>Room {room.roomNo} {room.isAvailable ? '' : '(Full)'}</option>
                                                     ))}
                                                 </select>
                                                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                             </div>
                                         </Field>
-
-                                        {/* ── Bed No Dropdown ── */}
                                         <Field label="Bed No" required>
                                             <div className="relative">
-                                                <select
-                                                    required
-                                                    value={formData.bedNo}
-                                                    onChange={e => setFormData({ ...formData, bedNo: e.target.value })}
-                                                    disabled={!formData.roomNo}
-                                                    className={`w-full appearance-none px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-all pr-9 ${
-                                                        formData.roomNo
-                                                            ? 'bg-slate-50 border-slate-200 text-slate-800 focus:bg-white cursor-pointer'
-                                                            : 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                                                    }`}
-                                                >
+                                                <select required value={formData.bedNo} onChange={e => setFormData({ ...formData, bedNo: e.target.value })} disabled={!formData.roomNo}
+                                                    className={`w-full appearance-none px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 transition-all pr-9 shadow-sm ${formData.roomNo ? 'bg-white border-slate-200 text-slate-800 hover:border-slate-300 cursor-pointer' : 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed'}`}>
                                                     <option value="">{formData.roomNo ? 'Select bed' : 'Select room first'}</option>
-                                                    {bedOptions.map(bed => (
-                                                        <option key={bed} value={bed}>{bed}</option>
-                                                    ))}
+                                                    {bedOptions.map(bed => <option key={bed} value={bed}>{bed}</option>)}
                                                 </select>
                                                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                                             </div>
                                         </Field>
                                     </div>
-
-                                    {/* Row 2: Sharing Type + Room Type (auto-filled, read-only) */}
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <Field label="Sharing Type">
                                             <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    readOnly
-                                                    value={formData.roomNo ? formData.sharingType : '—'}
-                                                    className={readOnlyCls}
-                                                />
-                                                {formData.roomNo && (
-                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-violet-500 bg-violet-50 px-1.5 py-0.5 rounded">Auto</span>
-                                                )}
+                                                <input type="text" readOnly value={formData.roomNo ? formData.sharingType : '—'} className={readOnlyCls} />
+                                                {formData.roomNo && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold text-violet-500 bg-violet-50 px-1.5 py-0.5 rounded-md border border-violet-100">Auto</span>}
                                             </div>
                                         </Field>
                                         <Field label="Room Type">
                                             <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    readOnly
-                                                    value={formData.roomNo ? formData.roomType : '—'}
-                                                    className={readOnlyCls}
-                                                />
-                                                {formData.roomNo && (
-                                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-violet-500 bg-violet-50 px-1.5 py-0.5 rounded">Auto</span>
-                                                )}
+                                                <input type="text" readOnly value={formData.roomNo ? formData.roomType : '—'} className={readOnlyCls} />
+                                                {formData.roomNo && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-bold text-violet-500 bg-violet-50 px-1.5 py-0.5 rounded-md border border-violet-100">Auto</span>}
                                             </div>
                                         </Field>
                                     </div>
-
-                                    {/* Row 3: Monthly Fee (auto-filled) + Advance Amount */}
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <Field label="Monthly Fee (₹)" required>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.monthlyFee}
-                                                onChange={e => setFormData({ ...formData, monthlyFee: e.target.value.replace(/[₹,\s]/g, '') })}
-                                                className={inputCls}
-                                                placeholder="e.g., 5000"
-                                            />
+                                            <input type="text" required value={formData.monthlyFee} onChange={e => setFormData({ ...formData, monthlyFee: e.target.value.replace(/[₹,\s]/g, '') })} className={inputCls} placeholder="e.g., 5000" />
                                         </Field>
                                         <Field label="Advance Amount (₹)" required>
                                             <input type="text" required value={formData.advanceAmount} onChange={e => setFormData({ ...formData, advanceAmount: e.target.value })} className={inputCls} placeholder="e.g., 10000" />
                                         </Field>
                                     </div>
-
-                                    {/* Room info hint */}
                                     {selectedRoom && (
-                                        <div className="flex items-center gap-2 p-3 bg-violet-50 border border-violet-100 rounded-xl">
-                                            <Building2 size={14} className="text-violet-500 shrink-0" />
-                                            <p className="text-xs text-violet-700">
+                                        <div className="flex items-start gap-2.5 p-3.5 bg-violet-50 border border-violet-100 rounded-xl">
+                                            <Building2 size={14} className="text-violet-500 shrink-0 mt-0.5" />
+                                            <p className="text-xs text-violet-700 leading-relaxed">
                                                 Room <span className="font-bold">{selectedRoom.roomNo}</span> · {formatSharingType(selectedRoom.sharingType)} · {formatRoomType(selectedRoom.roomType)} · {selectedRoom.bedNumbers} beds · ₹{selectedRoom.pricePerMonth.toLocaleString('en-IN')}/mo
                                             </p>
                                         </div>
                                     )}
-
                                     <Field label="Status" required>
                                         <SelectField value={formData.status} onChange={v => setFormData({ ...formData, status: v as any })}>
                                             <option>Active</option><option>Pending</option><option>Inactive</option>
@@ -676,47 +715,49 @@ export default function StudentTable() {
 
                                 {/* Documents */}
                                 <Section title="Documents">
-                                    {(['aadhaar', 'photo', 'idProof'] as const).map(docType => {
-                                        const labels = { aadhaar: 'Aadhaar Card', photo: 'Student Photo', idProof: 'Other ID Proof' };
-                                        const colors = { aadhaar: 'blue' as const, photo: 'green' as const, idProof: 'purple' as const };
-                                        const previewNames = { aadhaar: 'Aadhaar Preview', photo: 'Photo Preview', idProof: 'ID Proof Preview' };
-                                        const accepts = { aadhaar: 'image/jpeg,image/jpg,image/png,application/pdf', photo: 'image/jpeg,image/jpg,image/png', idProof: 'image/jpeg,image/jpg,image/png,application/pdf' };
-                                        return (
-                                            <DocUploadField
-                                                key={docType}
-                                                label={labels[docType]}
-                                                docType={docType}
-                                                file={documents[docType]}
-                                                preview={documentPreviews[docType]}
-                                                existingUrl={existingDocs[docType]}
-                                                accentColor={colors[docType]}
-                                                onFileChange={handleFileChange}
-                                                onRemoveNew={handleRemoveNewDocument}
-                                                onRemoveExisting={handleRemoveExistingDocument}
-                                                onPreview={(url) => handlePreviewDocument(docType, url, previewNames[docType])}
-                                                accept={accepts[docType]}
-                                                isImage={docType === 'photo'}
-                                            />
-                                        );
-                                    })}
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                        {(['aadhaar', 'photo', 'idProof'] as const).map(docType => {
+                                            const labels = { aadhaar: 'Aadhaar Card', photo: 'Student Photo', idProof: 'ID Proof' };
+                                            const colors = { aadhaar: 'blue' as const, photo: 'green' as const, idProof: 'purple' as const };
+                                            const previewNames = { aadhaar: 'Aadhaar Preview', photo: 'Photo Preview', idProof: 'ID Proof Preview' };
+                                            const accepts = { aadhaar: 'image/jpeg,image/jpg,image/png,application/pdf', photo: 'image/jpeg,image/jpg,image/png', idProof: 'image/jpeg,image/jpg,image/png,application/pdf' };
+                                            return (
+                                                <DocUploadField
+                                                    key={docType}
+                                                    label={labels[docType]}
+                                                    docType={docType}
+                                                    file={documents[docType]}
+                                                    preview={documentPreviews[docType]}
+                                                    existingUrl={existingDocs[docType]}
+                                                    accentColor={colors[docType]}
+                                                    onFileChange={handleFileChange}
+                                                    onRemoveNew={handleRemoveNewDocument}
+                                                    onRemoveExisting={handleRemoveExistingDocument}
+                                                    onPreview={(url) => handlePreviewDocument(docType, url, previewNames[docType])}
+                                                    accept={accepts[docType]}
+                                                    isImage={docType === 'photo'}
+                                                />
+                                            );
+                                        })}
+                                    </div>
                                 </Section>
 
                                 {error && (
-                                    <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5">
-                                        <XCircle size={16} className="text-rose-500 shrink-0 mt-0.5" />
-                                        <p className="text-sm text-rose-700 font-medium">{error}</p>
+                                    <div className="p-3.5 bg-rose-50 border border-rose-100 rounded-xl flex items-start gap-2.5">
+                                        <XCircle size={16} className="text-rose-400 shrink-0 mt-0.5" />
+                                        <p className="text-sm text-rose-600 font-medium">{error}</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Modal Footer */}
-                            <div className="sticky bottom-0 bg-white border-t border-slate-100 px-6 py-4 flex gap-3">
+                            <div className="sticky bottom-0 bg-white border-t border-slate-100 px-4 sm:px-6 py-4 flex gap-3">
                                 <button type="button" onClick={closeModal} disabled={isLoading}
-                                    className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-50 transition-all disabled:opacity-50">
+                                    className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-slate-600 text-sm font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50 shadow-sm">
                                     Cancel
                                 </button>
                                 <button type="submit" disabled={isLoading}
-                                    className={`flex-1 px-4 py-2.5 text-white rounded-xl text-sm font-semibold active:scale-95 transition-all disabled:opacity-60 shadow-md ${modalMode === 'edit' ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-200' : 'bg-violet-600 hover:bg-violet-700 shadow-violet-200'}`}>
+                                    className="flex-1 px-4 py-2.5 text-white rounded-xl text-sm font-bold active:scale-95 transition-all disabled:opacity-60 shadow-lg bg-violet-600 hover:bg-violet-700 shadow-violet-200">
                                     {isLoading ? (
                                         <span className="flex items-center justify-center gap-2">
                                             <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -730,31 +771,35 @@ export default function StudentTable() {
                 </div>
             )}
 
-            {/* Document Preview Modal */}
+            {/* ── Document Preview Modal ── */}
             {previewDocument && (
-                <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-violet-50 rounded-xl"><FileText size={18} className="text-violet-600" /></div>
-                                <div>
-                                    <h3 className="text-base font-bold text-slate-900">{previewDocument.name}</h3>
-                                    <p className="text-xs text-slate-500">{previewDocument.isPdf ? 'PDF Document' : 'Image'}</p>
+                <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-[60] p-0 sm:p-4">
+                    <div className="bg-white w-full sm:rounded-2xl sm:max-w-4xl sm:max-h-[92vh] max-h-[95vh] flex flex-col overflow-hidden rounded-t-2xl shadow-2xl">
+                        <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-slate-100 shrink-0">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="p-2 bg-violet-50 ring-2 ring-violet-100 rounded-xl shrink-0">
+                                    <FileText size={16} className="text-violet-600" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 truncate">{previewDocument.name}</h3>
+                                    <p className="text-xs text-slate-400 font-medium">{previewDocument.isPdf ? 'PDF Document' : 'Image File'}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 shrink-0">
                                 <button onClick={() => handleDownloadDocument(previewDocument.url, previewDocument.name)}
-                                    className="flex items-center gap-2 px-3.5 py-2 bg-violet-600 text-white text-sm font-semibold rounded-xl hover:bg-violet-700 transition-colors shadow-sm">
-                                    <Download size={15} />Download
+                                    className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-violet-700 transition-colors shadow-sm shadow-violet-200">
+                                    <Download size={14} strokeWidth={2.5} /><span className="hidden xs:inline">Download</span>
                                 </button>
-                                <button onClick={() => setPreviewDocument(null)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600"><X size={18} /></button>
+                                <button onClick={() => setPreviewDocument(null)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400 hover:text-slate-600">
+                                    <X size={18} strokeWidth={2.5} />
+                                </button>
                             </div>
                         </div>
-                        <div className="flex-1 overflow-auto bg-slate-50 p-6 flex items-start justify-center">
+                        <div className="flex-1 overflow-auto bg-slate-50 p-4 sm:p-6 flex items-start justify-center">
                             {previewDocument.isPdf ? (
-                                <iframe src={previewDocument.url} title={previewDocument.name} className="w-full rounded-xl border border-slate-200 shadow-sm bg-white" style={{ minHeight: '70vh' }} />
+                                <iframe src={previewDocument.url} title={previewDocument.name} className="w-full rounded-xl border border-slate-200 shadow-sm bg-white" style={{ minHeight: '60vh' }} />
                             ) : (
-                                <img src={previewDocument.url} alt={previewDocument.name} className="max-w-full h-auto rounded-xl shadow-lg border border-slate-200" style={{ maxHeight: '70vh', objectFit: 'contain' }} />
+                                <img src={previewDocument.url} alt={previewDocument.name} className="max-w-full h-auto rounded-xl shadow-lg border border-slate-200" style={{ maxHeight: '65vh', objectFit: 'contain' }} />
                             )}
                         </div>
                     </div>
@@ -768,9 +813,9 @@ export default function StudentTable() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center gap-3">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">{title}</h4>
+                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest whitespace-nowrap">{title}</h4>
                 <div className="flex-1 h-px bg-slate-100" />
             </div>
             {children}
@@ -781,8 +826,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
     return (
         <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1.5 uppercase tracking-wide">
-                {label}{required && <span className="text-rose-500 normal-case tracking-normal ml-0.5">*</span>}
+            <label className="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-widest">
+                {label}{required && <span className="text-rose-400 normal-case tracking-normal ml-0.5">*</span>}
             </label>
             {children}
         </div>
@@ -792,10 +837,11 @@ function Field({ label, required, children }: { label: string; required?: boolea
 function SelectFilter({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
     return (
         <div className="relative">
-            <select value={value} onChange={e => onChange(e.target.value)} className="appearance-none pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 transition-all cursor-pointer">
+            <select value={value} onChange={e => onChange(e.target.value)}
+                className="appearance-none pl-3 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 transition-all cursor-pointer shadow-sm font-medium hover:border-slate-300">
                 {children}
             </select>
-            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>
     );
 }
@@ -803,7 +849,8 @@ function SelectFilter({ value, onChange, children }: { value: string; onChange: 
 function SelectField({ value, onChange, children }: { value: string; onChange: (v: string) => void; children: React.ReactNode }) {
     return (
         <div className="relative">
-            <select value={value} onChange={e => onChange(e.target.value)} className="w-full appearance-none px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 focus:bg-white transition-all cursor-pointer pr-9">
+            <select value={value} onChange={e => onChange(e.target.value)}
+                className="w-full appearance-none px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400/50 focus:border-violet-400 transition-all cursor-pointer pr-9 shadow-sm hover:border-slate-300 font-medium">
                 {children}
             </select>
             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -811,19 +858,40 @@ function SelectField({ value, onChange, children }: { value: string; onChange: (
     );
 }
 
-function DocButton({ label, color, onClick, small }: { label: string; color: 'blue' | 'green' | 'purple'; onClick: () => void; small?: boolean }) {
-    const colors = { blue: 'bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200', green: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200', purple: 'bg-violet-50 text-violet-700 hover:bg-violet-100 border-violet-200' };
+// ── Icon-only Doc Button ──────────────────────────────────────────────────────
+
+interface DocIconButtonProps {
+    icon: React.ElementType;
+    color: 'blue' | 'green' | 'purple';
+    tooltip: string;
+    onClick: () => void;
+}
+
+function DocIconButton({ icon: Icon, color, tooltip, onClick }: DocIconButtonProps) {
+    const styles = {
+        blue: 'bg-blue-50 text-blue-600 hover:bg-blue-100 border-blue-100 hover:border-blue-200',
+        green: 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border-emerald-100 hover:border-emerald-200',
+        purple: 'bg-violet-50 text-violet-600 hover:bg-violet-100 border-violet-100 hover:border-violet-200',
+    };
     return (
-        <button onClick={onClick} className={`inline-flex items-center gap-1 font-semibold rounded-lg border transition-colors ${colors[color]} ${small ? 'px-2 py-1 text-[10px]' : 'px-2.5 py-1.5 text-xs'}`}>
-            <Eye size={small ? 10 : 12} />{label}
+        <button
+            onClick={onClick}
+            title={tooltip}
+            className={`relative group p-1.5 rounded-lg border transition-all active:scale-90 shadow-sm ${styles[color]}`}
+        >
+            <Icon size={14} strokeWidth={2} />
+            {/* Tooltip */}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-0.5 text-[10px] font-semibold text-white bg-slate-800 rounded-md opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity">
+                {tooltip}
+            </span>
         </button>
     );
 }
 
 function InfoBox({ label, value, bold, accent }: { label: string; value: string; bold?: boolean; accent?: boolean }) {
     return (
-        <div className="bg-slate-50 rounded-lg p-2.5">
-            <p className="text-slate-500 text-xs mb-0.5">{label}</p>
+        <div className="bg-slate-50 rounded-xl p-2.5 border border-slate-100">
+            <p className="text-slate-400 text-[9px] font-bold uppercase tracking-wider mb-1">{label}</p>
             <p className={`text-xs ${bold ? 'font-bold text-slate-800' : 'font-semibold'} ${accent ? 'text-sky-600' : 'text-slate-700'}`}>{value}</p>
         </div>
     );
@@ -850,7 +918,7 @@ function DocUploadField({ label, docType, file, preview, existingUrl, accentColo
     const accentRing = { blue: 'focus-within:ring-blue-300', green: 'focus-within:ring-emerald-300', purple: 'focus-within:ring-violet-300' }[accentColor];
     const accentText = { blue: 'text-blue-600', green: 'text-emerald-600', purple: 'text-violet-600' }[accentColor];
     const accentIconBg = { blue: 'bg-blue-50', green: 'bg-emerald-50', purple: 'bg-violet-50' }[accentColor];
-    const accentBg = { blue: 'border-blue-100 bg-blue-50/30', green: 'border-emerald-100 bg-emerald-50/30', purple: 'border-violet-100 bg-violet-50/30' }[accentColor];
+    const accentBg = { blue: 'border-blue-100 bg-blue-50/40', green: 'border-emerald-100 bg-emerald-50/40', purple: 'border-violet-100 bg-violet-50/40' }[accentColor];
 
     const hasNew = !!preview;
     const hasExisting = !!existingUrl && !hasNew;
@@ -859,61 +927,57 @@ function DocUploadField({ label, docType, file, preview, existingUrl, accentColo
 
     return (
         <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">{label}</label>
-
+            <label className="block text-[10px] font-bold text-slate-500 mb-2 uppercase tracking-widest">{label} <span className="text-red-500">*</span></label>
             {!hasAny ? (
-                <label className={`flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-slate-300 hover:bg-slate-50 transition-all group focus-within:ring-2 ${accentRing}`}>
-                    <div className={`p-2.5 ${accentIconBg} rounded-xl mb-2 group-hover:scale-110 transition-transform`}>
-                        <Upload size={18} className={accentText} />
+                <label className={`flex flex-col items-center justify-center w-full h-24 sm:h-28 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-violet-300 hover:bg-violet-50/30 transition-all group focus-within:ring-2 ${accentRing}`}>
+                    <div className={`p-2 ${accentIconBg} rounded-xl mb-1.5 group-hover:scale-110 transition-transform`}>
+                        <Upload size={15} className={accentText} strokeWidth={2.5} />
                     </div>
-                    <p className="text-sm text-slate-600 font-medium"><span className={`${accentText} font-semibold`}>Click to upload</span> {label}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">{isImage ? 'PNG, JPG' : 'PNG, JPG or PDF'} · Max 5 MB</p>
+                    <p className="text-xs text-slate-500 font-semibold text-center px-2">
+                        <span className={`${accentText}`}>Upload</span>
+                    </p>
+                    <p className="text-[9px] text-slate-400 mt-0.5 font-medium">{isImage ? 'PNG, JPG' : 'PNG, JPG, PDF'}</p>
                     <input type="file" className="hidden" accept={accept} onChange={e => onFileChange(e, docType)} />
                 </label>
             ) : (
-                <div className={`border rounded-xl p-3.5 space-y-2.5 ${accentBg}`}>
-                    <div className="flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
+                <div className={`border rounded-xl p-3 space-y-2.5 ${accentBg}`}>
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                             {isImage && !isPdfDataUrl(activeUrl) ? (
-                                <img src={activeUrl} alt="" className="w-12 h-12 object-cover rounded-lg border border-white shadow-sm shrink-0" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                <img src={activeUrl} alt="" className="w-10 h-10 object-cover rounded-lg border-2 border-white shadow-sm shrink-0" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                             ) : (
-                                <div className={`p-2.5 ${accentIconBg} rounded-lg shrink-0 border border-white`}>
-                                    <FileText size={20} className={accentText} />
+                                <div className={`p-2 ${accentIconBg} rounded-lg shrink-0 border border-white shadow-sm`}>
+                                    <FileText size={16} className={accentText} />
                                 </div>
                             )}
                             <div className="min-w-0">
                                 {hasNew ? (
                                     <>
-                                        <p className="text-sm font-semibold text-slate-800 truncate">{file?.name}</p>
-                                        <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-medium bg-emerald-50 px-1.5 py-0.5 rounded-md mt-0.5">
-                                            ✓ New file selected
-                                        </span>
+                                        <p className="text-xs font-bold text-slate-800 truncate">{file?.name}</p>
+                                        <span className="inline-flex items-center gap-1 text-[9px] text-emerald-600 font-bold bg-emerald-50 px-1.5 py-0.5 rounded-md mt-0.5 border border-emerald-100">✓ New</span>
                                     </>
                                 ) : (
                                     <>
-                                        <p className="text-sm font-semibold text-slate-800">Existing document</p>
-                                        <span className="inline-flex items-center gap-1 text-xs text-slate-500 font-medium bg-white px-1.5 py-0.5 rounded-md mt-0.5 border border-slate-200">
-                                            Saved on server
-                                        </span>
+                                        <p className="text-xs font-bold text-slate-700">Saved</p>
+                                        <span className="inline-flex text-[9px] text-slate-400 font-semibold bg-white px-1.5 py-0.5 rounded-md mt-0.5 border border-slate-200">Existing</span>
                                     </>
                                 )}
                             </div>
                         </div>
-                        <div className="flex gap-1.5 shrink-0">
-                            <button type="button" onClick={() => onPreview(activeUrl)} className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors bg-white border border-slate-200" title="Preview">
-                                <Eye size={15} />
+                        <div className="flex gap-1 shrink-0">
+                            <button type="button" onClick={() => onPreview(activeUrl)} className="p-1.5 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors bg-white border border-slate-200 shadow-sm" title="Preview">
+                                <Eye size={13} strokeWidth={2} />
                             </button>
-                            <button type="button" onClick={() => hasNew ? onRemoveNew(docType) : onRemoveExisting(docType)} className="p-2 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors bg-white border border-slate-200" title="Remove">
-                                <Trash2 size={15} />
+                            <button type="button" onClick={() => hasNew ? onRemoveNew(docType) : onRemoveExisting(docType)} className="p-1.5 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors bg-white border border-slate-200 shadow-sm" title="Remove">
+                                <Trash2 size={13} strokeWidth={2} />
                             </button>
                         </div>
                     </div>
-
-                    <label className="flex items-center gap-2 text-xs text-slate-500 cursor-pointer hover:text-slate-700 transition-colors group w-fit">
+                    <label className="flex items-center gap-1.5 text-xs text-slate-500 cursor-pointer hover:text-slate-700 transition-colors group w-fit">
                         <span className={`p-1 ${accentIconBg} rounded-md group-hover:scale-110 transition-transform`}>
-                            <Upload size={11} className={accentText} />
+                            <Upload size={10} className={accentText} strokeWidth={2.5} />
                         </span>
-                        Replace with a different file
+                        <span className="font-medium text-[11px]">Replace</span>
                         <input type="file" className="hidden" accept={accept} onChange={e => onFileChange(e, docType)} />
                     </label>
                 </div>
